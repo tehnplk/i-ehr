@@ -3,9 +3,7 @@ drop table if exists public.c_sex cascade;
 create table public.c_sex (
   id bigint generated always as identity primary key,
   code text not null unique,
-  name text not null,
-  created_at timestamptz not null default now(),
-  updated_at timestamptz not null default now()
+  name text not null
 );
 
 insert into public.c_sex(code, name) values
@@ -16,9 +14,7 @@ drop table if exists public.c_fstatus cascade;
 create table public.c_fstatus (
   id bigint generated always as identity primary key,
   code text not null unique,
-  name text not null,
-  created_at timestamptz not null default now(),
-  updated_at timestamptz not null default now()
+  name text not null
 );
 
 insert into public.c_fstatus(code, name) values
@@ -29,9 +25,7 @@ drop table if exists public.c_vstatus cascade;
 create table public.c_vstatus (
   id bigint generated always as identity primary key,
   code text not null unique,
-  name text not null,
-  created_at timestamptz not null default now(),
-  updated_at timestamptz not null default now()
+  name text not null
 );
 
 insert into public.c_vstatus(code, name) values
@@ -45,9 +39,7 @@ drop table if exists public.c_religion cascade;
 create table public.c_religion (
   id bigint generated always as identity primary key,
   code text not null unique,
-  name text not null,
-  created_at timestamptz not null default now(),
-  updated_at timestamptz not null default now()
+  name text not null
 );
 
 insert into public.c_religion(code, name) values
@@ -67,9 +59,7 @@ drop table if exists public.c_education cascade;
 create table public.c_education (
   id bigint generated always as identity primary key,
   code text not null unique,
-  name text not null,
-  created_at timestamptz not null default now(),
-  updated_at timestamptz not null default now()
+  name text not null
 );
 
 insert into public.c_education(code, name) values
@@ -86,9 +76,7 @@ drop table if exists public.c_nation cascade;
 create table public.c_nation (
   id bigint generated always as identity primary key,
   code text not null unique,
-  name text not null,
-  created_at timestamptz not null default now(),
-  updated_at timestamptz not null default now()
+  name text not null
 );
 
 insert into public.c_nation(code, name) values
@@ -372,9 +360,7 @@ drop table if exists public.c_race cascade;
 create table public.c_race (
   id bigint generated always as identity primary key,
   code text not null unique,
-  name text not null,
-  created_at timestamptz not null default now(),
-  updated_at timestamptz not null default now()
+  name text not null
 );
 
 insert into public.c_race(code, name) values
@@ -658,9 +644,7 @@ drop table if exists public.c_occupation cascade;
 create table public.c_occupation (
   id bigint generated always as identity primary key,
   code text not null unique,
-  name text not null,
-  created_at timestamptz not null default now(),
-  updated_at timestamptz not null default now()
+  name text not null
 );
 
 insert into public.c_occupation(code, name) values
@@ -1100,6 +1084,52 @@ insert into public.c_occupation(code, name) values
 ('9998', 'ไม่ทราบ / ไม่ระบุ'),
 ('9999', 'ไม่มีงานทำ');
 
+drop table if exists public.c_council cascade;
+create table public.c_council (
+  id bigint generated always as identity primary key,
+  code text not null unique,
+  name text not null
+);
+
+insert into public.c_council(code, name) values
+('01', 'แพทยสภา'),
+('02', 'สภาการพยาบาล'),
+('03', 'สภาเภสัชกรรม'),
+('04', 'ทันตแพทยสภา'),
+('05', 'สภากายภาพบำบัด'),
+('06', 'สภาเทคนิคการแพทย์'),
+('07', 'สัตวแพทยสภา'),
+('08', 'สภาการแพทย์แผนไทย');
+
+drop table if exists public.c_providertype cascade;
+create table public.c_providertype (
+  id bigint generated always as identity primary key,
+  code text not null unique,
+  name text not null
+);
+
+insert into public.c_providertype(code, name) values
+('01', 'แพทย์'),
+('011', 'แพทย์เวชศาสตร์ครอบครัว (Family Medicine: FM)'),
+('02', 'ทันตแพทย์'),
+('03', 'พยาบาลวิชาชีพ (ที่ทำหน้าที่ตรวจรักษา)'),
+('04', 'เจ้าพนักงานสาธารณสุขชุมชน'),
+('05', 'นักวิชาการสาธารณสุข'),
+('06', 'ทันตาภิบาล'),
+('07', 'อสม. (ผู้ให้บริการชุมชน)'),
+('08', 'บุคลากรแพทย์แผนไทย แพทย์พื้นบ้าน แพทย์ทางเลือก (ที่มีวุฒิการศึกษาหรือผ่านการอบรมตามเกณฑ์)'),
+('081', 'แพทย์แผนไทย/แพทย์แผนไทยประยุกต์ : (ที่มีใบประกอบวิชาชีพฯ)'),
+('082', 'แพทย์พื้นบ้าน (ที่มีใบประกอบวิชาชีพฯ หรือได้รับการรับรองตามระเบียบการแพทย์แผนไทยฯ)'),
+('083', 'แพทย์แผนจีน (ที่มีใบประกอบวิชาชีพฯ)'),
+('084', 'ผู้ช่วยแพทย์แผนไทย (ที่ผ่านการอบรมตามเกณฑ์)'),
+('085', 'บุคลากรแพทย์แผนไทย แพทย์พื้นบ้าน แพทย์แผนจีน แพทย์ทางเลือก (ที่มีวุฒิการศึกษาหรือผ่านการอบรมตามเกณฑ์ แต่ที่ไม่มีใบประกอบวิชาชีพ)'),
+('09', 'อื่นๆ'),
+('10', 'ผู้ดูแลผู้ป่วยที่บ้าน หรือผู้ช่วยเหลือดูแลผู้สูงอายุ (Care Giver: CG)'),
+('11', 'เภสัชกร'),
+('12', 'บุคลากรด้านเวชศาสตร์ฟื้นฟู (รวม นักกายภาพบำบัด/นักเวชกรรมฟื้นฟู)'),
+('13', 'บุคลากรด้านเทคนิคการแพทย์'),
+('14', 'ผู้จัดการดูแล (Care Manager: CM)');
+
 drop table if exists public.c_prename cascade;
 create table public.c_prename (
   id bigint generated always as identity primary key,
@@ -1107,9 +1137,7 @@ create table public.c_prename (
   name text not null,
   code_dopa text,
   short text,
-  sex text,
-  created_at timestamptz not null default now(),
-  updated_at timestamptz not null default now()
+  sex text
 );
 
 insert into public.c_prename(code, name, code_dopa, short, sex) values

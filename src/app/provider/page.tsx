@@ -7,77 +7,62 @@ import {
   RotateCcw,
   Save,
   Search,
+  Stethoscope,
   Trash2,
-  UserRound,
 } from "lucide-react";
 import { db } from "@/lib/db";
 import { LookupCombobox } from "@/components/LookupCombobox";
-import { createPerson, deletePerson, updatePerson } from "./actions";
-import { listColumns, personFields } from "./fields";
+import { createProvider, deleteProvider, updateProvider } from "./actions";
+import { listColumns, providerFields } from "./fields";
 
-type SearchParams = Promise<{
-  q?: string;
-  edit?: string;
-  mode?: string;
-}>;
+type SearchParams = Promise<{ q?: string; edit?: string; mode?: string }>;
 
-type PersonRow = {
+type ProviderRow = {
   id: number;
+  hospcode: string | null;
+  provider: string | null;
+  registerno: string | null;
+  council: string | null;
   cid: string | null;
-  pid: string | null;
-  hn: string | null;
   prename: string | null;
   name: string | null;
   lname: string | null;
   sex: string | null;
   birth: string | null;
-  mobile: string | null;
+  providertype: string | null;
+  startdate: string | null;
+  outdate: string | null;
+  movefrom: string | null;
+  moveto: string | null;
+  d_update: string | null;
   updated_at: string;
   [key: string]: string | number | Date | null;
 };
 
 function textValue(value: unknown) {
-  if (value === null || value === undefined) {
-    return "";
-  }
-
-  if (value instanceof Date) {
-    return value.toISOString();
-  }
-
+  if (value === null || value === undefined) return "";
+  if (value instanceof Date) return value.toISOString();
   return String(value);
 }
 
 function formatDateTime(value: string | Date | null | undefined) {
-  if (!value) {
-    return "-";
-  }
-
+  if (!value) return "-";
   return new Intl.DateTimeFormat("th-TH", {
     dateStyle: "medium",
     timeStyle: "short",
   }).format(new Date(value));
 }
 
-function buildPersonUrl(query: string, values: Record<string, string | undefined>) {
+function buildUrl(query: string, values: Record<string, string | undefined>) {
   const search = new URLSearchParams();
-
-  if (query) {
-    search.set("q", query);
-  }
-
-  for (const [key, value] of Object.entries(values)) {
-    if (value) {
-      search.set(key, value);
-    }
-  }
-
-  const result = search.toString();
-  return result ? `/person?${result}` : "/person";
+  if (query) search.set("q", query);
+  for (const [k, v] of Object.entries(values)) if (v) search.set(k, v);
+  const r = search.toString();
+  return r ? `/provider?${r}` : "/provider";
 }
 
-async function getPeople(query: string) {
-  const peopleQuery = db<PersonRow>("person")
+async function getProviders(query: string) {
+  const q = db<ProviderRow>("provider")
     .select([...listColumns])
     .orderBy("updated_at", "desc")
     .orderBy("id", "desc")
@@ -85,28 +70,22 @@ async function getPeople(query: string) {
 
   if (query) {
     const like = `%${query}%`;
-    peopleQuery.where((builder) => {
-      builder
-        .whereILike("cid", like)
-        .orWhereILike("pid", like)
-        .orWhereILike("hn", like)
+    q.where((b) => {
+      b.whereILike("provider", like)
+        .orWhereILike("registerno", like)
+        .orWhereILike("cid", like)
         .orWhereILike("name", like)
-        .orWhereILike("lname", like)
-        .orWhereILike("mobile", like);
+        .orWhereILike("lname", like);
     });
   }
 
-  return peopleQuery;
+  return q;
 }
 
-async function getSelectedPerson(id?: string) {
-  const selectedId = Number(id);
-
-  if (!Number.isInteger(selectedId) || selectedId < 1) {
-    return null;
-  }
-
-  return db<PersonRow>("person").where({ id: selectedId }).first();
+async function getSelected(id?: string) {
+  const n = Number(id);
+  if (!Number.isInteger(n) || n < 1) return null;
+  return db<ProviderRow>("provider").where({ id: n }).first();
 }
 
 type LookupRow = { code: string; name: string };
@@ -115,12 +94,11 @@ type LookupMap = Record<string, LookupRow[]>;
 async function getLookups(): Promise<LookupMap> {
   const tables = Array.from(
     new Set(
-      personFields
+      providerFields
         .map((f) => f.lookup)
         .filter((t): t is string => typeof t === "string"),
     ),
   );
-
   const entries = await Promise.all(
     tables.map(async (t) => {
       const rows = await db(t)
@@ -129,7 +107,6 @@ async function getLookups(): Promise<LookupMap> {
       return [t, rows] as const;
     }),
   );
-
   return Object.fromEntries(entries);
 }
 
@@ -142,25 +119,38 @@ function lookupName(
   return lookups[table]?.find((r) => r.code === code)?.name ?? "";
 }
 
-export default async function PersonPage({
+/** providertype may be a comma-separated list — show each name. */
+function providertypeLabel(lookups: LookupMap, code: string | null) {
+  if (!code) return "-";
+  const codes = code.split(",").map((c) => c.trim()).filter(Boolean);
+  if (codes.length === 0) return "-";
+  return codes
+    .map((c) => {
+      const n = lookupName(lookups, "c_providertype", c);
+      return n ? `${c} ${n}` : c;
+    })
+    .join(", ");
+}
+
+export default async function ProviderPage({
   searchParams,
 }: {
   searchParams: SearchParams;
 }) {
   const params = await searchParams;
   const query = params.q?.trim() ?? "";
-  const [people, selectedPerson, totalResult, lookups] = await Promise.all([
-    getPeople(query),
-    getSelectedPerson(params.edit),
-    db("person").count<{ count: string }[]>("id as count").first(),
+  const [rows, selected, totalRow, lookups] = await Promise.all([
+    getProviders(query),
+    getSelected(params.edit),
+    db("provider").count<{ count: string }[]>("id as count").first(),
     getLookups(),
   ]);
-  const modalMode = params.mode === "create" ? "create" : selectedPerson ? "edit" : null;
-  const isEditing = Boolean(selectedPerson);
-  const formAction = isEditing ? updatePerson : createPerson;
-  const total = Number(totalResult?.count ?? 0);
-  const closeHref = buildPersonUrl(query, {});
-  const newHref = buildPersonUrl(query, { mode: "create" });
+  const modalMode = params.mode === "create" ? "create" : selected ? "edit" : null;
+  const isEditing = Boolean(selected);
+  const formAction = isEditing ? updateProvider : createProvider;
+  const total = Number(totalRow?.count ?? 0);
+  const closeHref = buildUrl(query, {});
+  const newHref = buildUrl(query, { mode: "create" });
 
   return (
     <main className="min-h-screen bg-[var(--bg)] text-[var(--text)]">
@@ -176,10 +166,10 @@ export default async function PersonPage({
             </Link>
             <div>
               <h1 className="text-3xl font-semibold tracking-normal text-[var(--text)]">
-                Person
+                Provider
               </h1>
               <p className="mt-1 max-w-2xl text-sm leading-5 text-[var(--text-dim)]">
-                Manage person records in the ehr database.
+                Manage healthcare providers in the ehr database.
               </p>
             </div>
           </div>
@@ -205,7 +195,7 @@ export default async function PersonPage({
 
         <section className="min-w-0 border border-[var(--border)] bg-[var(--surface)]">
           <div className="flex flex-col gap-3 border-b border-[var(--border-soft)] p-4 md:flex-row md:items-center md:justify-between">
-            <form action="/person" className="flex w-full gap-2 md:max-w-xl">
+            <form action="/provider" className="flex w-full gap-2 md:max-w-xl">
               <label className="relative flex-1">
                 <Search
                   className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-[var(--text-faint)]"
@@ -214,7 +204,7 @@ export default async function PersonPage({
                 <input
                   name="q"
                   defaultValue={query}
-                  placeholder="Search CID, PID, HN, name, mobile"
+                  placeholder="Search Provider No., Register No., CID, name"
                   className="h-10 w-full border border-[var(--border)] bg-[var(--surface-input)] pl-10 pr-3 text-sm outline-none transition focus:border-[var(--invert)]"
                 />
               </label>
@@ -229,7 +219,7 @@ export default async function PersonPage({
             {query ? (
               <Link
                 href={closeHref}
-                className="inline-flex h-10 min-w-22 items-center justify-center gap-2 border border-[var(--border)] px-3.5 text-sm font-medium text-[var(--text-muted)] hover:bg-[#f2f4f0]"
+                className="inline-flex h-10 min-w-22 items-center justify-center gap-2 border border-[var(--border)] px-3.5 text-sm font-medium text-[var(--text-muted)] hover:bg-[var(--surface-2)]"
               >
                 <RotateCcw size={16} />
                 Clear
@@ -238,65 +228,69 @@ export default async function PersonPage({
           </div>
 
           <div className="overflow-x-auto">
-            <table className="w-full min-w-[980px] border-collapse text-left text-sm">
+            <table className="w-full min-w-[1100px] border-collapse text-left text-sm">
               <thead className="bg-[var(--surface-3)] text-xs uppercase text-[var(--text-dim)]">
                 <tr>
                   <th className="px-4 py-3 font-semibold">ID</th>
-                  <th className="px-4 py-3 font-semibold">CID</th>
-                  <th className="px-4 py-3 font-semibold">PID</th>
+                  <th className="px-4 py-3 font-semibold">Provider No.</th>
                   <th className="px-4 py-3 font-semibold">Name</th>
-                  <th className="px-4 py-3 font-semibold">HN</th>
-                  <th className="px-4 py-3 font-semibold">Contact</th>
+                  <th className="px-4 py-3 font-semibold">Council</th>
+                  <th className="px-4 py-3 font-semibold">Type</th>
+                  <th className="px-4 py-3 font-semibold">Start</th>
                   <th className="px-4 py-3 font-semibold">Updated</th>
                   <th className="px-4 py-3 text-right font-semibold">Action</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-[var(--border-subtle)]">
-                {people.map((person) => (
+                {rows.map((r) => (
                   <tr
-                    key={person.id}
+                    key={r.id}
                     className={
-                      selectedPerson?.id === person.id
+                      selected?.id === r.id
                         ? "bg-[var(--row-active)]"
                         : "bg-[var(--surface)] hover:bg-[var(--surface-hover)]"
                     }
                   >
                     <td className="px-4 py-3 font-mono text-xs text-[var(--text-muted)]">
-                      {person.id}
+                      {r.id}
                     </td>
-                    <td className="px-4 py-3">{person.cid || "-"}</td>
-                    <td className="px-4 py-3">{person.pid || "-"}</td>
+                    <td className="px-4 py-3 font-mono">{r.provider || "-"}</td>
                     <td className="px-4 py-3">
                       <div className="font-medium">
                         {[
-                          lookupName(lookups, "c_prename", person.prename as string | null),
-                          person.name,
-                          person.lname,
+                          lookupName(lookups, "c_prename", r.prename),
+                          r.name,
+                          r.lname,
                         ]
                           .filter(Boolean)
                           .join(" ") || "-"}
                       </div>
                       <div className="text-xs text-[var(--text-faint)]">
-                        {lookupName(lookups, "c_sex", person.sex) || "-"} ·{" "}
-                        {person.birth || "-"}
+                        {lookupName(lookups, "c_sex", r.sex) || "-"} ·{" "}
+                        {r.cid || "-"}
                       </div>
                     </td>
-                    <td className="px-4 py-3">{person.hn || "-"}</td>
-                    <td className="px-4 py-3">{person.mobile || "-"}</td>
+                    <td className="px-4 py-3">
+                      {lookupName(lookups, "c_council", r.council) || "-"}
+                    </td>
+                    <td className="px-4 py-3">{providertypeLabel(lookups, r.providertype)}</td>
+                    <td className="px-4 py-3 font-mono text-xs">
+                      {r.startdate || "-"}
+                    </td>
                     <td className="px-4 py-3 text-xs text-[var(--text-dim)]">
-                      {formatDateTime(person.updated_at)}
+                      {formatDateTime(r.updated_at)}
                     </td>
                     <td className="px-4 py-3">
                       <div className="flex justify-end gap-2">
                         <Link
-                          href={buildPersonUrl(query, { edit: String(person.id) })}
+                          href={buildUrl(query, { edit: String(r.id) })}
                           className="inline-flex h-9 w-9 items-center justify-center border border-[var(--border)] text-[var(--text-muted)] hover:border-[var(--invert)]"
                           title="Edit"
                         >
                           <Edit3 size={15} />
                         </Link>
-                        <form action={deletePerson}>
-                          <input type="hidden" name="id" value={person.id} />
+                        <form action={deleteProvider}>
+                          <input type="hidden" name="id" value={r.id} />
                           <button
                             type="submit"
                             className="inline-flex h-9 w-9 items-center justify-center border border-[#ead8d5] text-[#9a3f35] hover:bg-[#fff5f3]"
@@ -313,11 +307,13 @@ export default async function PersonPage({
             </table>
           </div>
 
-          {people.length === 0 ? (
+          {rows.length === 0 ? (
             <div className="flex min-h-52 flex-col items-center justify-center gap-3 border-t border-[var(--border-subtle)] px-4 text-center">
-              <UserRound className="text-[#9aa395]" size={34} />
-              <p className="text-sm font-medium">No records found</p>
-              <p className="text-sm text-[var(--text-dim)]">Try another search or add a new person.</p>
+              <Stethoscope className="text-[#9aa395]" size={34} />
+              <p className="text-sm font-medium">No providers found</p>
+              <p className="text-sm text-[var(--text-dim)]">
+                Try another search or add a new provider.
+              </p>
             </div>
           ) : null}
         </section>
@@ -329,12 +325,12 @@ export default async function PersonPage({
             <div className="flex items-start justify-between gap-4 border-b border-[var(--border-soft)] px-5 py-4 sm:px-6">
               <div>
                 <p className="text-xs font-medium uppercase tracking-[0.18em] text-[var(--text-faint)]">
-                  {isEditing ? "Update person" : "Create person"}
+                  {isEditing ? "Update provider" : "Create provider"}
                 </p>
                 <h2 className="mt-1 text-2xl font-semibold text-[var(--text)]">
                   {isEditing
-                    ? `${selectedPerson?.name || "Person"} ${selectedPerson?.lname || ""}`.trim()
-                    : "New person record"}
+                    ? `${selected?.name || "Provider"} ${selected?.lname || ""}`.trim()
+                    : "New provider record"}
                 </h2>
               </div>
               <Link
@@ -348,14 +344,14 @@ export default async function PersonPage({
 
             <form action={formAction} className="flex min-h-0 flex-1 flex-col">
               {isEditing ? (
-                <input type="hidden" name="id" value={selectedPerson?.id} />
+                <input type="hidden" name="id" value={selected?.id} />
               ) : null}
 
               <div className="grid min-h-0 flex-1 gap-0 overflow-y-auto lg:grid-cols-[minmax(0,1fr)_320px]">
                 <div className="p-5 sm:p-6">
                   <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
-                    {personFields.map((field) => {
-                      const current = textValue(selectedPerson?.[field.name]);
+                    {providerFields.map((field) => {
+                      const current = textValue(selected?.[field.name]);
                       const inputClass =
                         "h-11 w-full border border-[var(--border)] bg-[var(--surface-input)] px-3 text-sm outline-none transition focus:border-[var(--invert)]";
                       return (
@@ -401,7 +397,7 @@ export default async function PersonPage({
                       <dl className="mt-3 space-y-2 text-sm text-[#4f574d]">
                         <div className="flex justify-between gap-3 border-b border-[#e1e6de] pb-2">
                           <dt>ID</dt>
-                          <dd className="font-mono">{selectedPerson?.id ?? "Auto"}</dd>
+                          <dd className="font-mono">{selected?.id ?? "Auto"}</dd>
                         </div>
                         <div className="flex justify-between gap-3 border-b border-[#e1e6de] pb-2">
                           <dt>Mode</dt>
@@ -424,7 +420,7 @@ export default async function PersonPage({
                       </button>
                       <Link
                         href={closeHref}
-                        className="inline-flex h-11 w-full items-center justify-center gap-2 border border-[#d6dbd3] bg-[var(--surface)] px-5 text-sm font-medium text-[var(--text-muted)] hover:bg-[#f1f4ef]"
+                        className="inline-flex h-11 w-full items-center justify-center gap-2 border border-[#d6dbd3] bg-[var(--surface)] px-5 text-sm font-medium text-[var(--text-muted)] hover:bg-[var(--surface-2)]"
                       >
                         <RotateCcw size={16} />
                         Cancel

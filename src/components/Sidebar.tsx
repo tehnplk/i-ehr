@@ -9,6 +9,7 @@ import {
   ClipboardList,
   HeartPulse,
   IdCard,
+  Stethoscope,
   Syringe,
   UserRound,
 } from "lucide-react";
@@ -20,6 +21,7 @@ const items = [
   { href: "/visit", label: "ทะเบียน Visit", icon: ClipboardList },
   { href: "/ncd", label: "ทะเบียน NCD", icon: HeartPulse },
   { href: "/epi", label: "ทะเบียน EPI", icon: Syringe },
+  { href: "/provider", label: "ทะเบียน Provider", icon: Stethoscope },
 ];
 
 export function Sidebar() {

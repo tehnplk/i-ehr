@@ -124,6 +124,30 @@ def rows_nation():
         out.append((code.zfill(3), name))
     return out
 
+def rows_council():
+    rs = load_json('09_council')
+    out = []
+    for r in rs[2:]:
+        if not r: continue
+        code = str(r[0]).strip()
+        if not re.fullmatch(r'\d{1,3}', code): continue
+        name = str(r[1]).strip() if len(r) > 1 else ''
+        if not name: continue
+        out.append((code.zfill(2), name))
+    return out
+
+def rows_providertype():
+    rs = load_json('10_providertype')
+    out = []
+    for r in rs[2:]:
+        if not r: continue
+        code = str(r[0]).strip()
+        if not re.fullmatch(r'\d{2,3}', code): continue
+        name = str(r[1]).strip() if len(r) > 1 else ''
+        if not name: continue
+        out.append((code, name[:255]))
+    return out
+
 def rows_occupation():
     rs = load_json('03_occupation')
     out = []
@@ -167,6 +191,8 @@ SIMPLE_TABLES = [
     ('c_nation', rows_nation),
     ('c_race', rows_nation),  # same source list
     ('c_occupation', rows_occupation),
+    ('c_council', rows_council),
+    ('c_providertype', rows_providertype),
 ]
 
 def ddl_simple(name):
