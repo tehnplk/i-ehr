@@ -1,8 +1,49 @@
 @import "tailwindcss";
 
+@custom-variant dark (&:where(.dark, .dark *));
+
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  /* Semantic palette — light */
+  --bg: #f7f8f6;
+  --surface: #ffffff;
+  --surface-2: #f6f8f4;
+  --surface-3: #f3f5f1;
+  --surface-input: #fbfcfa;
+  --surface-hover: #fafbf9;
+  --row-active: #eef3ec;
+  --border: #dfe3dc;
+  --border-subtle: #edf0ea;
+  --border-soft: #e7eae4;
+  --text: #20221f;
+  --text-muted: #4d564b;
+  --text-dim: #667064;
+  --text-faint: #7a8277;
+  --invert: #20221f;
+  --invert-fg: #ffffff;
+  --invert-hover: #343832;
+
+  --background: var(--bg);
+  --foreground: var(--text);
+}
+
+.dark {
+  --bg: #0e110f;
+  --surface: #161a18;
+  --surface-2: #1b201d;
+  --surface-3: #1f2522;
+  --surface-input: #1a1f1c;
+  --surface-hover: #20251f;
+  --row-active: #243028;
+  --border: #2a312d;
+  --border-subtle: #232925;
+  --border-soft: #2a312d;
+  --text: #e7ebe5;
+  --text-muted: #c2cabe;
+  --text-dim: #98a097;
+  --text-faint: #7d857c;
+  --invert: #e7ebe5;
+  --invert-fg: #0e110f;
+  --invert-hover: #cdd2c9;
 }
 
 @theme inline {
@@ -12,15 +53,8 @@
   --font-mono: var(--font-geist-mono);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
-}
-
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-sans), Arial, Helvetica, sans-serif;
 }

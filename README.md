@@ -18,6 +18,34 @@ Open [http://localhost:3000](http://localhost:3000) with your browser to see the
 
 You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
 
+## Local Supabase
+
+This repo includes a minimal Supabase Docker stack for Postgres database and Realtime.
+
+```bash
+cp .env.example .env.local
+bun run supabase:up
+```
+
+Local services:
+
+- Postgres: set `DATABASE_URL` in `.env.local` or `.env.production`
+- Realtime: set `NEXT_PUBLIC_SUPABASE_REALTIME_URL` in `.env.local` or `.env.production`
+
+Useful commands:
+
+```bash
+bun run supabase:logs
+bun run supabase:down
+bun run supabase:reset
+```
+
+To stream Postgres changes for a table, add it to the Realtime publication:
+
+```sql
+alter publication supabase_realtime add table public.your_table;
+```
+
 This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
 
 ## Learn More

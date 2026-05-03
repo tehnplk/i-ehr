@@ -6,10 +6,17 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "supabase:up": "docker compose --env-file .env.local up -d",
+    "supabase:down": "docker compose --env-file .env.local down",
+    "supabase:logs": "docker compose --env-file .env.local logs -f db realtime",
+    "supabase:reset": "docker compose --env-file .env.local down -v && docker compose --env-file .env.local up -d"
   },
   "dependencies": {
+    "knex": "^3.2.10",
+    "lucide-react": "^1.14.0",
     "next": "16.2.4",
+    "pg": "^8.20.0",
     "react": "19.2.4",
     "react-dom": "19.2.4"
   },

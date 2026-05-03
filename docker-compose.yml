@@ -1,0 +1,59 @@
+name: i-ehr-supabase
+
+services:
+  db:
+    image: supabase/postgres:17.6.1.074
+    container_name: i-ehr-supabase-db
+    restart: unless-stopped
+    ports:
+      - "${POSTGRES_PORT:?POSTGRES_PORT is required}:5432"
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:?POSTGRES_DB is required}
+      POSTGRES_USER: ${POSTGRES_USER:?POSTGRES_USER is required}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD is required}
+    command:
+      - postgres
+      - -c
+      - config_file=/etc/postgresql/postgresql.conf
+      - -c
+      - wal_level=logical
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -h localhost"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    volumes:
+      - supabase-db-data:/var/lib/postgresql/data
+      - ./supabase/init:/docker-entrypoint-initdb.d:ro
+
+  realtime:
+    image: supabase/realtime:latest
+    container_name: i-ehr-supabase-realtime
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    ports:
+      - "${REALTIME_PORT:?REALTIME_PORT is required}:4000"
+    environment:
+      PORT: 4000
+      APP_NAME: realtime
+      DB_HOST: db
+      DB_PORT: 5432
+      DB_USER: ${POSTGRES_USER:?POSTGRES_USER is required}
+      DB_PASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD is required}
+      DB_NAME: ${POSTGRES_DB:?POSTGRES_DB is required}
+      DB_ENC_KEY: ${REALTIME_DB_ENC_KEY:?REALTIME_DB_ENC_KEY is required}
+      DB_AFTER_CONNECT_QUERY: "SET search_path TO _realtime"
+      API_JWT_SECRET: ${SUPABASE_JWT_SECRET:?SUPABASE_JWT_SECRET is required}
+      SECRET_KEY_BASE: ${REALTIME_SECRET_KEY_BASE:?REALTIME_SECRET_KEY_BASE is required}
+      ERL_AFLAGS: "-proto_dist inet_tcp"
+      SEED_SELF_HOST: true
+      LOG_LEVEL: ${REALTIME_LOG_LEVEL:?REALTIME_LOG_LEVEL is required}
+      METRICS_JWT_SECRET: ${REALTIME_METRICS_JWT_SECRET:?REALTIME_METRICS_JWT_SECRET is required}
+      DASHBOARD_AUTH: basic_auth
+      DASHBOARD_USER: ${REALTIME_DASHBOARD_USER:?REALTIME_DASHBOARD_USER is required}
+      DASHBOARD_PASSWORD: ${REALTIME_DASHBOARD_PASSWORD:?REALTIME_DASHBOARD_PASSWORD is required}
+
+volumes:
+  supabase-db-data:
