@@ -2,7 +2,10 @@
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
-import { db } from "@/lib/db";
+import {
+  payloadWithServerTime,
+  serializedTableWrite,
+} from "@/lib/serializedWrite";
 import { personFields } from "./fields";
 
 function cleanValue(value: FormDataEntryValue | null) {
@@ -21,7 +24,10 @@ function personPayload(formData: FormData) {
 }
 
 export async function createPerson(formData: FormData) {
-  await db("person").insert(personPayload(formData));
+  await serializedTableWrite("person", async (trx) => {
+    const payload = await payloadWithServerTime(trx, "person", personPayload(formData));
+    await trx("person").insert(payload);
+  });
   revalidatePath("/person");
   redirect("/person");
 }
@@ -33,7 +39,10 @@ export async function updatePerson(formData: FormData) {
     throw new Error("รหัสบุคคลไม่ถูกต้อง");
   }
 
-  await db("person").where({ id }).update(personPayload(formData));
+  await serializedTableWrite("person", async (trx) => {
+    const payload = await payloadWithServerTime(trx, "person", personPayload(formData));
+    await trx("person").where({ id }).update(payload);
+  });
   revalidatePath("/person");
   redirect("/person");
 }
@@ -45,7 +54,9 @@ export async function deletePerson(formData: FormData) {
     throw new Error("รหัสบุคคลไม่ถูกต้อง");
   }
 
-  await db("person").where({ id }).delete();
+  await serializedTableWrite("person", async (trx) => {
+    await trx("person").where({ id }).delete();
+  });
   revalidatePath("/person");
   redirect("/person");
 }

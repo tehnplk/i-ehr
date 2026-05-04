@@ -2,7 +2,10 @@
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
-import { db } from "@/lib/db";
+import {
+  payloadWithServerTime,
+  serializedTableWrite,
+} from "@/lib/serializedWrite";
 import { chronicFields } from "./fields";
 
 function cleanValue(value: FormDataEntryValue | null) {
@@ -26,21 +29,37 @@ function validId(formData: FormData) {
 }
 
 export async function createChronic(formData: FormData) {
-  await db("chronic").insert(chronicPayload(formData));
+  await serializedTableWrite("chronic", async (trx) => {
+    const payload = await payloadWithServerTime(
+      trx,
+      "chronic",
+      chronicPayload(formData),
+    );
+    await trx("chronic").insert(payload);
+  });
   revalidatePath("/chronic");
   redirect("/chronic");
 }
 
 export async function updateChronic(formData: FormData) {
   const id = validId(formData);
-  await db("chronic").where({ id }).update(chronicPayload(formData));
+  await serializedTableWrite("chronic", async (trx) => {
+    const payload = await payloadWithServerTime(
+      trx,
+      "chronic",
+      chronicPayload(formData),
+    );
+    await trx("chronic").where({ id }).update(payload);
+  });
   revalidatePath("/chronic");
   redirect("/chronic");
 }
 
 export async function deleteChronic(formData: FormData) {
   const id = validId(formData);
-  await db("chronic").where({ id }).delete();
+  await serializedTableWrite("chronic", async (trx) => {
+    await trx("chronic").where({ id }).delete();
+  });
   revalidatePath("/chronic");
   redirect("/chronic");
 }

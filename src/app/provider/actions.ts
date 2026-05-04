@@ -2,7 +2,10 @@
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
-import { db } from "@/lib/db";
+import {
+  payloadWithServerTime,
+  serializedTableWrite,
+} from "@/lib/serializedWrite";
 import { providerFields } from "./fields";
 
 function cleanValue(value: FormDataEntryValue | null) {
@@ -18,7 +21,14 @@ function providerPayload(formData: FormData) {
 }
 
 export async function createProvider(formData: FormData) {
-  await db("provider").insert(providerPayload(formData));
+  await serializedTableWrite("provider", async (trx) => {
+    const payload = await payloadWithServerTime(
+      trx,
+      "provider",
+      providerPayload(formData),
+    );
+    await trx("provider").insert(payload);
+  });
   revalidatePath("/provider");
   redirect("/provider");
 }
@@ -26,7 +36,14 @@ export async function createProvider(formData: FormData) {
 export async function updateProvider(formData: FormData) {
   const id = Number(formData.get("id"));
   if (!Number.isInteger(id) || id < 1) throw new Error("รหัสผู้ให้บริการไม่ถูกต้อง");
-  await db("provider").where({ id }).update(providerPayload(formData));
+  await serializedTableWrite("provider", async (trx) => {
+    const payload = await payloadWithServerTime(
+      trx,
+      "provider",
+      providerPayload(formData),
+    );
+    await trx("provider").where({ id }).update(payload);
+  });
   revalidatePath("/provider");
   redirect("/provider");
 }
@@ -34,7 +51,9 @@ export async function updateProvider(formData: FormData) {
 export async function deleteProvider(formData: FormData) {
   const id = Number(formData.get("id"));
   if (!Number.isInteger(id) || id < 1) throw new Error("รหัสผู้ให้บริการไม่ถูกต้อง");
-  await db("provider").where({ id }).delete();
+  await serializedTableWrite("provider", async (trx) => {
+    await trx("provider").where({ id }).delete();
+  });
   revalidatePath("/provider");
   redirect("/provider");
 }
