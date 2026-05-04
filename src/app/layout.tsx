@@ -3,6 +3,7 @@ import { Geist_Mono, Noto_Sans_Thai } from "next/font/google";
 import "sweetalert2/dist/sweetalert2.min.css";
 import "./globals.css";
 import { Sidebar } from "@/components/Sidebar";
+import { TopToolbar } from "@/components/TopToolbar";
 
 const notoSansThai = Noto_Sans_Thai({
   variable: "--font-geist-sans",
@@ -35,9 +36,14 @@ export default function RootLayout({
       <head>
         <script dangerouslySetInnerHTML={{ __html: themeInitScript }} />
       </head>
-      <body className="min-h-full flex bg-[var(--bg)] text-[var(--text)]">
-        <Sidebar />
-        <div className="flex min-h-screen flex-1 flex-col">{children}</div>
+      <body className="min-h-full bg-[var(--bg)] text-[var(--text)]">
+        <div className="flex min-h-screen">
+          <Sidebar />
+          <div className="flex min-h-screen min-w-0 flex-1 flex-col">
+            <TopToolbar />
+            {children}
+          </div>
+        </div>
       </body>
     </html>
   );

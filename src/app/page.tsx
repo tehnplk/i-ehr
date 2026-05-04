@@ -93,7 +93,7 @@ export default async function Home() {
       icon: Activity,
     },
     {
-      label: "ผู้ป่วย",
+      label: "ผู้ป่วยวันนี้",
       value: patientsToday,
       hint: "จำนวน PID ที่มารับบริการไม่ซ้ำ",
       icon: Users,
@@ -121,30 +121,18 @@ export default async function Home() {
   ];
 
   return (
-    <main className="min-h-screen bg-[var(--bg)] text-[var(--text)]">
-      <div className="mx-auto flex w-full max-w-[1500px] flex-col gap-6 px-4 py-8 sm:px-6 lg:px-8">
-        <header className="flex flex-col gap-3 border-b border-[var(--border)] pb-5 lg:flex-row lg:items-end lg:justify-between">
-          <div className="space-y-1.5">
-            <span className="inline-flex items-center gap-2 text-sm font-medium text-[var(--text-dim)]">
-              <Database size={16} />
-              i-EHR
-            </span>
-            <div>
-              <h1 className="text-3xl font-semibold tracking-tight text-[var(--text)]">
-                เวชระเบียนอิเล็กทรอนิกส์
-              </h1>
-              <p className="mt-1 max-w-2xl text-sm leading-5 text-[var(--text-dim)]">
-                สรุปรายการให้บริการประจำวันสำหรับ {label}
-              </p>
-            </div>
-          </div>
+    <main className="flex-1 bg-[var(--bg)] text-[var(--text)]">
+      <div className="mx-auto flex w-full max-w-[1500px] flex-col gap-5 px-4 py-6 sm:px-6 lg:px-8">
+        <header className="flex flex-col gap-3 border-b border-[var(--border)] pb-4 lg:flex-row lg:items-center lg:justify-between">
+          <h1 className="flex items-center gap-2 text-xl font-semibold tracking-normal text-[var(--text)]">
+            <Database size={20} className="text-[var(--invert)]" />
+            <span>ภาพรวมระบบ</span>
+          </h1>
 
-          <div className="flex flex-wrap items-center gap-2.5 self-start lg:self-auto">
+          <div className="flex flex-wrap items-center gap-2.5">
             <div className="flex h-[34px] items-center gap-3 border border-[var(--border)] bg-[var(--surface)] px-3.5">
-              <span className="text-xs font-medium uppercase tracking-[0.14em] text-[var(--text-faint)]">
-                บุคคล
-              </span>
-              <span className="text-base font-semibold text-[var(--text)]">
+              <span className="text-xs font-medium text-[var(--text-faint)]">บุคคล</span>
+              <span className="text-sm font-semibold tabular-nums text-[var(--text)]">
                 {totalPersons.toLocaleString()}
               </span>
             </div>
@@ -153,7 +141,7 @@ export default async function Home() {
               className="inline-flex h-[34px] items-center justify-center gap-2 border border-[var(--invert)] bg-[var(--invert)] px-4 text-sm font-medium text-[var(--invert-fg)] hover:bg-[var(--invert-hover)]"
             >
               <Users size={15} />
-              เปิดทะเบียนบุคคล
+              ทะเบียนบุคคล
             </Link>
           </div>
         </header>
@@ -165,14 +153,14 @@ export default async function Home() {
               className="flex flex-col gap-3 border border-[var(--border)] bg-[var(--surface)] p-5"
             >
               <div className="flex items-center justify-between">
-                <span className="text-xs font-medium uppercase tracking-[0.16em] text-[var(--text-faint)]">
+                <span className="text-sm font-medium text-[var(--text-muted)]">
                   {name}
                 </span>
                 <span className="inline-flex h-[34px] w-[34px] items-center justify-center border border-[var(--border-soft)] bg-[var(--surface-2)] text-[var(--text-muted)]">
                   <Icon size={17} />
                 </span>
               </div>
-              <div className="text-4xl font-semibold tabular-nums text-[var(--text)]">
+              <div className="text-3xl font-semibold tabular-nums text-[var(--text)]">
                 {value.toLocaleString()}
               </div>
               <p className="text-xs text-[var(--text-dim)]">{hint}</p>
@@ -185,14 +173,14 @@ export default async function Home() {
             <header className="flex items-center justify-between border-b border-[var(--border-soft)] px-5 py-3">
               <div className="flex items-center gap-2">
                 <ClipboardList size={16} className="text-[var(--text-muted)]" />
-                <h2 className="text-sm font-semibold uppercase tracking-[0.14em] text-[var(--text-muted)]">
+                <h2 className="text-sm font-semibold text-[var(--text-muted)]">
                   สรุปวันนี้ตามตาราง
                 </h2>
               </div>
               <span className="font-mono text-xs text-[var(--text-faint)]">{iso}</span>
             </header>
             <table className="w-full border-collapse text-left text-sm">
-              <thead className="bg-[var(--surface-3)] text-xs uppercase text-[var(--text-dim)]">
+              <thead className="bg-[var(--surface-3)] text-xs text-[var(--text-dim)]">
                 <tr>
                   <th className="px-5 py-3 font-semibold">ตาราง</th>
                   <th className="px-5 py-3 font-semibold">ประเภท</th>
@@ -201,7 +189,10 @@ export default async function Home() {
               </thead>
               <tbody className="divide-y divide-[var(--border-subtle)]">
                 {breakdown.map((row) => (
-                  <tr key={row.label} className="bg-[var(--surface)] hover:bg-[var(--surface-hover)]">
+                  <tr
+                    key={row.label}
+                    className="bg-[var(--surface)] hover:bg-[var(--surface-hover)]"
+                  >
                     <td className="px-5 py-3 font-mono text-xs text-[var(--text)]">
                       {row.label}
                     </td>
@@ -219,14 +210,12 @@ export default async function Home() {
             <article className="border border-[var(--border)] bg-[var(--surface)] p-5">
               <div className="flex items-center gap-2 text-[var(--text-muted)]">
                 <HeartPulse size={16} />
-                <h3 className="text-sm font-semibold uppercase tracking-[0.14em]">
-                  ภาพรวม
-                </h3>
+                <h3 className="text-sm font-semibold">ภาพรวม</h3>
               </div>
               <dl className="mt-4 space-y-3 text-sm">
                 <div className="flex items-baseline justify-between gap-3 border-b border-[var(--border-subtle)] pb-2">
                   <dt className="text-[var(--text-dim)]">วันที่</dt>
-                  <dd className="font-mono text-[var(--text)]">{iso}</dd>
+                  <dd className="text-right text-[var(--text)]">{label}</dd>
                 </div>
                 <div className="flex items-baseline justify-between gap-3 border-b border-[var(--border-subtle)] pb-2">
                   <dt className="text-[var(--text-dim)]">การรับบริการ</dt>
@@ -235,7 +224,7 @@ export default async function Home() {
                   </dd>
                 </div>
                 <div className="flex items-baseline justify-between gap-3 border-b border-[var(--border-subtle)] pb-2">
-                  <dt className="text-[var(--text-dim)]">ผู้ป่วย</dt>
+                  <dt className="text-[var(--text-dim)]">ผู้ป่วยวันนี้</dt>
                   <dd className="font-semibold tabular-nums">
                     {patientsToday.toLocaleString()}
                   </dd>
@@ -256,7 +245,7 @@ export default async function Home() {
             </article>
 
             <article className="border border-[var(--border)] bg-[var(--invert)] p-5 text-[var(--invert-fg)]">
-              <h3 className="text-sm font-semibold uppercase tracking-[0.14em] text-[var(--invert-fg)]/80">
+              <h3 className="text-sm font-semibold text-[var(--invert-fg)]/80">
                 ลิงก์ด่วน
               </h3>
               <div className="mt-4 flex flex-col gap-2">
@@ -268,6 +257,15 @@ export default async function Home() {
                     <Users size={15} /> ทะเบียนบุคคล
                   </span>
                   <span className="text-xs text-[var(--invert-fg)]/60">/person</span>
+                </Link>
+                <Link
+                  href="/chronic"
+                  className="inline-flex h-[34px] items-center justify-between border border-white/20 bg-[var(--surface)]/5 px-4 text-sm font-medium hover:bg-[var(--surface)]/10"
+                >
+                  <span className="inline-flex items-center gap-2">
+                    <HeartPulse size={15} /> ทะเบียนโรคเรื้อรัง
+                  </span>
+                  <span className="text-xs text-[var(--invert-fg)]/60">/chronic</span>
                 </Link>
               </div>
             </article>

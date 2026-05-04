@@ -203,7 +203,7 @@ export default async function PersonPage({
                   name="q"
                   defaultValue={query}
                   placeholder="ค้นหา CID, PID, HN, ชื่อ, เบอร์มือถือ"
-                  className="h-[34px] w-full border border-[var(--border)] bg-[var(--surface-input)] pl-10 pr-3 text-sm outline-none transition placeholder:text-xs focus:border-[var(--invert)]"
+                  className="h-[34px] w-full border border-[var(--border)] bg-[var(--surface-input)] pl-10 pr-3 text-xs outline-none transition placeholder:text-xs focus:border-[var(--invert)]"
                 />
               </label>
               <button
@@ -313,11 +313,6 @@ export default async function PersonPage({
                 <p className="text-xs font-medium uppercase tracking-[0.18em] text-[var(--text-faint)]">
                   {isEditing ? "แก้ไขข้อมูลบุคคล" : "เพิ่มข้อมูลบุคคล"}
                 </p>
-                <h2 className="mt-1 text-2xl font-semibold text-[var(--text)]">
-                  {isEditing
-                    ? `${selectedPerson?.name || "บุคคล"} ${selectedPerson?.lname || ""}`.trim()
-                    : "ข้อมูลบุคคลใหม่"}
-                </h2>
               </div>
               <Link
                 href={closeHref}
@@ -339,7 +334,7 @@ export default async function PersonPage({
                     {personFields.map((field) => {
                       const current = textValue(selectedPerson?.[field.name]);
                       const inputClass =
-                        "h-[34px] w-full border border-[var(--border)] bg-[var(--surface-input)] px-3 text-sm outline-none transition placeholder:text-xs focus:border-[var(--invert)]";
+                        "h-[34px] w-full border border-[var(--border)] bg-[var(--surface-input)] px-3 text-xs outline-none transition placeholder:text-xs focus:border-[var(--invert)]";
                       return (
                         <label
                           key={field.name}

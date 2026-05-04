@@ -141,7 +141,7 @@ export default async function ChronicPage({
   const closeHref = buildUrl(query, {});
   const newHref = buildUrl(query, { mode: "create" });
   const inputClass =
-    "h-[34px] w-full border border-[var(--border)] bg-[var(--surface-input)] px-3 text-sm outline-none transition placeholder:text-xs focus:border-[var(--invert)]";
+    "h-[34px] w-full border border-[var(--border)] bg-[var(--surface-input)] px-3 text-xs outline-none transition placeholder:text-xs focus:border-[var(--invert)]";
 
   return (
     <main className="min-h-screen bg-[var(--bg)] text-[var(--text)]">
@@ -183,7 +183,7 @@ export default async function ChronicPage({
                   name="q"
                   defaultValue={query}
                   placeholder="ค้นหา PID, CID, ชื่อผู้ป่วย หรือรหัสโรค"
-                  className="h-[34px] w-full border border-[var(--border)] bg-[var(--surface-input)] pl-10 pr-3 text-sm outline-none transition placeholder:text-xs focus:border-[var(--invert)]"
+                  className="h-[34px] w-full border border-[var(--border)] bg-[var(--surface-input)] pl-10 pr-3 text-xs outline-none transition placeholder:text-xs focus:border-[var(--invert)]"
                 />
               </label>
               <button
@@ -300,9 +300,6 @@ export default async function ChronicPage({
                     ? "แก้ไขข้อมูลผู้ป่วยโรคเรื้อรัง"
                     : "เพิ่มข้อมูลผู้ป่วยโรคเรื้อรัง"}
                 </p>
-                <h2 className="mt-1 text-xl font-semibold text-[var(--text)]">
-                  {isEditing ? selected?.chronic || "โรคเรื้อรัง" : "ข้อมูลผู้ป่วยใหม่"}
-                </h2>
               </div>
               <Link
                 href={closeHref}

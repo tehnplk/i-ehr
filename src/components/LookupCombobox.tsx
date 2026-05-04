@@ -25,9 +25,11 @@ export function LookupCombobox({
   placeholder,
   className,
 }: Props) {
-  const initial = options.find((o) => o.code === defaultCode);
+  const initial = options.find((option) => option.code === defaultCode);
   const [code, setCode] = useState(defaultCode ?? "");
-  const [text, setText] = useState(initial ? `${initial.code} - ${initial.name}` : "");
+  const [text, setText] = useState(
+    initial ? `${initial.code} - ${initial.name}` : "",
+  );
   const [open, setOpen] = useState(false);
   const [highlight, setHighlight] = useState(0);
   const wrapRef = useRef<HTMLDivElement>(null);
@@ -38,23 +40,25 @@ export function LookupCombobox({
     if (!q) return options.slice(0, MAX_VISIBLE);
     return options
       .filter(
-        (o) =>
-          o.code.toLowerCase().includes(q) || o.name.toLowerCase().includes(q),
+        (option) =>
+          option.code.toLowerCase().includes(q) ||
+          option.name.toLowerCase().includes(q),
       )
       .slice(0, MAX_VISIBLE);
   }, [options, text]);
 
   useEffect(() => {
-    function onClick(e: MouseEvent) {
-      if (!wrapRef.current?.contains(e.target as Node)) setOpen(false);
+    function onClick(event: MouseEvent) {
+      if (!wrapRef.current?.contains(event.target as Node)) setOpen(false);
     }
+
     document.addEventListener("mousedown", onClick);
     return () => document.removeEventListener("mousedown", onClick);
   }, []);
 
-  function commit(opt: Option) {
-    setCode(opt.code);
-    setText(`${opt.code} - ${opt.name}`);
+  function commit(option: Option) {
+    setCode(option.code);
+    setText(`${option.code} - ${option.name}`);
     setOpen(false);
   }
 
@@ -63,20 +67,20 @@ export function LookupCombobox({
     setText("");
   }
 
-  function onKeyDown(e: React.KeyboardEvent<HTMLInputElement>) {
-    if (e.key === "ArrowDown") {
-      e.preventDefault();
+  function onKeyDown(event: React.KeyboardEvent<HTMLInputElement>) {
+    if (event.key === "ArrowDown") {
+      event.preventDefault();
       setOpen(true);
-      setHighlight((h) => Math.min(h + 1, filtered.length - 1));
-    } else if (e.key === "ArrowUp") {
-      e.preventDefault();
-      setHighlight((h) => Math.max(h - 1, 0));
-    } else if (e.key === "Enter") {
+      setHighlight((value) => Math.min(value + 1, filtered.length - 1));
+    } else if (event.key === "ArrowUp") {
+      event.preventDefault();
+      setHighlight((value) => Math.max(value - 1, 0));
+    } else if (event.key === "Enter") {
       if (open && filtered[highlight]) {
-        e.preventDefault();
+        event.preventDefault();
         commit(filtered[highlight]);
       }
-    } else if (e.key === "Escape") {
+    } else if (event.key === "Escape") {
       setOpen(false);
     }
   }
@@ -88,8 +92,8 @@ export function LookupCombobox({
         type="text"
         value={text}
         placeholder={placeholder ?? "ค้นหารหัสหรือชื่อ..."}
-        onChange={(e) => {
-          const next = e.target.value;
+        onChange={(event) => {
+          const next = event.target.value;
           setText(next);
           setCode(typedCode(next));
           setOpen(true);
@@ -115,24 +119,24 @@ export function LookupCombobox({
           ref={listRef}
           className="absolute left-0 right-0 top-full z-50 mt-1 max-h-72 overflow-auto border border-[var(--border)] bg-[var(--surface)] shadow-lg"
         >
-          {filtered.map((opt, i) => (
+          {filtered.map((option, index) => (
             <li
-              key={opt.code}
-              onMouseDown={(e) => {
-                e.preventDefault();
-                commit(opt);
+              key={option.code}
+              onMouseDown={(event) => {
+                event.preventDefault();
+                commit(option);
               }}
-              onMouseEnter={() => setHighlight(i)}
-              className={`flex cursor-pointer items-baseline gap-2 px-3 py-2 text-sm ${
-                i === highlight
+              onMouseEnter={() => setHighlight(index)}
+              className={`flex cursor-pointer items-baseline gap-2 px-3 py-2 text-xs ${
+                index === highlight
                   ? "bg-[var(--row-active)] text-[var(--text)]"
                   : "text-[var(--text-muted)] hover:bg-[var(--surface-hover)]"
               }`}
             >
               <span className="font-mono text-xs text-[var(--text-faint)]">
-                {opt.code}
+                {option.code}
               </span>
-              <span className="truncate">{opt.name}</span>
+              <span className="truncate">{option.name}</span>
             </li>
           ))}
         </ul>

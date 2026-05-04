@@ -2,7 +2,6 @@ import Link from "next/link";
 import {
   CirclePlus,
   CircleX,
-  Database,
   Edit3,
   RotateCcw,
   Save,
@@ -19,7 +18,6 @@ type SearchParams = Promise<{ q?: string; edit?: string; mode?: string }>;
 
 type ProviderRow = {
   id: number;
-  hospcode: string | null;
   provider: string | null;
   registerno: string | null;
   council: string | null;
@@ -28,13 +26,8 @@ type ProviderRow = {
   name: string | null;
   lname: string | null;
   sex: string | null;
-  birth: string | null;
   providertype: string | null;
   startdate: string | null;
-  outdate: string | null;
-  movefrom: string | null;
-  moveto: string | null;
-  d_update: string | null;
   updated_at: string;
   [key: string]: string | number | Date | null;
 };
@@ -56,13 +49,15 @@ function formatDateTime(value: string | Date | null | undefined) {
 function buildUrl(query: string, values: Record<string, string | undefined>) {
   const search = new URLSearchParams();
   if (query) search.set("q", query);
-  for (const [k, v] of Object.entries(values)) if (v) search.set(k, v);
-  const r = search.toString();
-  return r ? `/provider?${r}` : "/provider";
+  for (const [key, value] of Object.entries(values)) {
+    if (value) search.set(key, value);
+  }
+  const result = search.toString();
+  return result ? `/provider?${result}` : "/provider";
 }
 
 async function getProviders(query: string) {
-  const q = db<ProviderRow>("provider")
+  const providersQuery = db<ProviderRow>("provider")
     .select([...listColumns])
     .orderBy("updated_at", "desc")
     .orderBy("id", "desc")
@@ -70,8 +65,9 @@ async function getProviders(query: string) {
 
   if (query) {
     const like = `%${query}%`;
-    q.where((b) => {
-      b.whereILike("provider", like)
+    providersQuery.where((builder) => {
+      builder
+        .whereILike("provider", like)
         .orWhereILike("registerno", like)
         .orWhereILike("cid", like)
         .orWhereILike("name", like)
@@ -79,13 +75,13 @@ async function getProviders(query: string) {
     });
   }
 
-  return q;
+  return providersQuery;
 }
 
 async function getSelected(id?: string) {
-  const n = Number(id);
-  if (!Number.isInteger(n) || n < 1) return null;
-  return db<ProviderRow>("provider").where({ id: n }).first();
+  const selectedId = Number(id);
+  if (!Number.isInteger(selectedId) || selectedId < 1) return null;
+  return db<ProviderRow>("provider").where({ id: selectedId }).first();
 }
 
 type LookupRow = { code: string; name: string };
@@ -95,18 +91,20 @@ async function getLookups(): Promise<LookupMap> {
   const tables = Array.from(
     new Set(
       providerFields
-        .map((f) => f.lookup)
-        .filter((t): t is string => typeof t === "string"),
+        .map((field) => field.lookup)
+        .filter((table): table is string => typeof table === "string"),
     ),
   );
+
   const entries = await Promise.all(
-    tables.map(async (t) => {
-      const rows = await db(t)
+    tables.map(async (table) => {
+      const rows = await db(table)
         .select<LookupRow[]>(["code", "name"])
         .orderBy("code");
-      return [t, rows] as const;
+      return [table, rows] as const;
     }),
   );
+
   return Object.fromEntries(entries);
 }
 
@@ -116,18 +114,18 @@ function lookupName(
   code: string | null | undefined,
 ) {
   if (!table || !code) return "";
-  return lookups[table]?.find((r) => r.code === code)?.name ?? "";
+  return lookups[table]?.find((row) => row.code === code)?.name ?? "";
 }
 
-/** providertype may be a comma-separated list, so show each name. */
 function providertypeLabel(lookups: LookupMap, code: string | null) {
   if (!code) return "-";
-  const codes = code.split(",").map((c) => c.trim()).filter(Boolean);
+  const codes = code.split(",").map((value) => value.trim()).filter(Boolean);
   if (codes.length === 0) return "-";
+
   return codes
-    .map((c) => {
-      const n = lookupName(lookups, "c_providertype", c);
-      return n ? `${c} ${n}` : c;
+    .map((value) => {
+      const name = lookupName(lookups, "c_providertype", value);
+      return name ? `${value} ${name}` : value;
     })
     .join(", ");
 }
@@ -139,7 +137,7 @@ export default async function ProviderPage({
 }) {
   const params = await searchParams;
   const query = params.q?.trim() ?? "";
-  const [rows, selected, totalRow, lookups] = await Promise.all([
+  const [rows, selected, totalResult, lookups] = await Promise.all([
     getProviders(query),
     getSelected(params.edit),
     db("provider").count<{ count: string }[]>("id as count").first(),
@@ -148,31 +146,18 @@ export default async function ProviderPage({
   const modalMode = params.mode === "create" ? "create" : selected ? "edit" : null;
   const isEditing = Boolean(selected);
   const formAction = isEditing ? updateProvider : createProvider;
-  const total = Number(totalRow?.count ?? 0);
+  const total = Number(totalResult?.count ?? 0);
   const closeHref = buildUrl(query, {});
   const newHref = buildUrl(query, { mode: "create" });
 
   return (
     <main className="min-h-screen bg-[var(--bg)] text-[var(--text)]">
       <div className="mx-auto flex w-full max-w-[1500px] flex-col gap-3 px-4 py-4 sm:px-6 lg:px-8">
-        <header className="flex flex-col gap-3 border-b border-[var(--border)] pb-3 lg:flex-row lg:items-end lg:justify-between">
-          <div className="space-y-1.5">
-            <Link
-              href="/"
-              className="inline-flex items-center gap-2 text-sm font-medium text-[var(--text-dim)] hover:text-[var(--text)]"
-            >
-              <Database size={16} />
-              EHR
-            </Link>
-            <div>
-              <h1 className="text-3xl font-semibold tracking-normal text-[var(--text)]">
-                ทะเบียนผู้ให้บริการ
-              </h1>
-              <p className="mt-1 max-w-2xl text-sm leading-5 text-[var(--text-dim)]">
-                จัดการข้อมูลผู้ให้บริการในฐานข้อมูล EHR
-              </p>
-            </div>
-          </div>
+        <header className="flex flex-col gap-3 border-b border-[var(--border)] pb-3 lg:flex-row lg:items-center lg:justify-between">
+          <h1 className="flex items-center gap-2 text-xl font-semibold tracking-normal text-[var(--text)]">
+            <Stethoscope size={20} className="text-[var(--invert)]" />
+            <span>ทะเบียนผู้ให้บริการ</span>
+          </h1>
 
           <div className="flex items-center gap-2.5 self-start lg:self-auto">
             <div className="flex h-[34px] min-w-22 items-center justify-between gap-3 border border-[var(--border)] bg-[var(--surface)] px-3.5">
@@ -205,7 +190,7 @@ export default async function ProviderPage({
                   name="q"
                   defaultValue={query}
                   placeholder="ค้นหารหัสผู้ให้บริการ, เลขทะเบียน, CID, ชื่อ"
-                  className="h-[34px] w-full border border-[var(--border)] bg-[var(--surface-input)] pl-10 pr-3 text-sm outline-none transition placeholder:text-xs focus:border-[var(--invert)]"
+                  className="h-[34px] w-full border border-[var(--border)] bg-[var(--surface-input)] pl-10 pr-3 text-xs outline-none transition placeholder:text-xs focus:border-[var(--invert)]"
                 />
               </label>
               <button
@@ -242,55 +227,57 @@ export default async function ProviderPage({
                 </tr>
               </thead>
               <tbody className="divide-y divide-[var(--border-subtle)]">
-                {rows.map((r) => (
+                {rows.map((row) => (
                   <tr
-                    key={r.id}
+                    key={row.id}
                     className={
-                      selected?.id === r.id
+                      selected?.id === row.id
                         ? "bg-[var(--row-active)]"
                         : "bg-[var(--surface)] hover:bg-[var(--surface-hover)]"
                     }
                   >
                     <td className="px-4 py-3 font-mono text-xs text-[var(--text-muted)]">
-                      {r.id}
+                      {row.id}
                     </td>
-                    <td className="px-4 py-3 font-mono">{r.provider || "-"}</td>
+                    <td className="px-4 py-3 font-mono">{row.provider || "-"}</td>
                     <td className="px-4 py-3">
                       <div className="font-medium">
                         {[
-                          lookupName(lookups, "c_prename", r.prename),
-                          r.name,
-                          r.lname,
+                          lookupName(lookups, "c_prename", row.prename),
+                          row.name,
+                          row.lname,
                         ]
                           .filter(Boolean)
                           .join(" ") || "-"}
                       </div>
                       <div className="text-xs text-[var(--text-faint)]">
-                        {lookupName(lookups, "c_sex", r.sex) || "-"} ·{" "}
-                        {r.cid || "-"}
+                        {lookupName(lookups, "c_sex", row.sex) || "-"} ·{" "}
+                        {row.cid || "-"}
                       </div>
                     </td>
                     <td className="px-4 py-3">
-                      {lookupName(lookups, "c_council", r.council) || "-"}
+                      {lookupName(lookups, "c_council", row.council) || "-"}
                     </td>
-                    <td className="px-4 py-3">{providertypeLabel(lookups, r.providertype)}</td>
+                    <td className="px-4 py-3">
+                      {providertypeLabel(lookups, row.providertype)}
+                    </td>
                     <td className="px-4 py-3 font-mono text-xs">
-                      {r.startdate || "-"}
+                      {row.startdate || "-"}
                     </td>
                     <td className="px-4 py-3 text-xs text-[var(--text-dim)]">
-                      {formatDateTime(r.updated_at)}
+                      {formatDateTime(row.updated_at)}
                     </td>
                     <td className="px-4 py-3">
                       <div className="flex justify-end gap-2">
                         <Link
-                          href={buildUrl(query, { edit: String(r.id) })}
+                          href={buildUrl(query, { edit: String(row.id) })}
                           className="inline-flex h-[34px] w-[34px] items-center justify-center border border-[var(--border)] text-[var(--text-muted)] hover:border-[var(--invert)]"
                           title="แก้ไข"
                         >
                           <Edit3 size={15} />
                         </Link>
                         <form action={deleteProvider}>
-                          <input type="hidden" name="id" value={r.id} />
+                          <input type="hidden" name="id" value={row.id} />
                           <DeleteConfirmButton text="ต้องการลบข้อมูลผู้ให้บริการนี้หรือไม่" />
                         </form>
                       </div>
@@ -321,11 +308,6 @@ export default async function ProviderPage({
                 <p className="text-xs font-medium uppercase tracking-[0.18em] text-[var(--text-faint)]">
                   {isEditing ? "แก้ไขข้อมูลผู้ให้บริการ" : "เพิ่มข้อมูลผู้ให้บริการ"}
                 </p>
-                <h2 className="mt-1 text-2xl font-semibold text-[var(--text)]">
-                  {isEditing
-                    ? `${selected?.name || "ผู้ให้บริการ"} ${selected?.lname || ""}`.trim()
-                    : "ข้อมูลผู้ให้บริการใหม่"}
-                </h2>
               </div>
               <Link
                 href={closeHref}
@@ -337,9 +319,7 @@ export default async function ProviderPage({
             </div>
 
             <form action={formAction} className="flex min-h-0 flex-1 flex-col">
-              {isEditing ? (
-                <input type="hidden" name="id" value={selected?.id} />
-              ) : null}
+              {isEditing ? <input type="hidden" name="id" value={selected?.id} /> : null}
 
               <div className="grid min-h-0 flex-1 gap-0 overflow-y-auto lg:grid-cols-[minmax(0,1fr)_320px]">
                 <div className="p-5 sm:p-6">
@@ -347,7 +327,8 @@ export default async function ProviderPage({
                     {providerFields.map((field) => {
                       const current = textValue(selected?.[field.name]);
                       const inputClass =
-                        "h-[34px] w-full border border-[var(--border)] bg-[var(--surface-input)] px-3 text-sm outline-none transition placeholder:text-xs focus:border-[var(--invert)]";
+                        "h-[34px] w-full border border-[var(--border)] bg-[var(--surface-input)] px-3 text-xs outline-none transition placeholder:text-xs focus:border-[var(--invert)]";
+
                       return (
                         <label
                           key={field.name}

@@ -1,29 +1,35 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import Link from "next/link";
 import {
   Activity,
   ChevronLeft,
   ChevronRight,
-  ClipboardList,
-  HeartPulse,
-  Stethoscope,
-  Syringe,
-  UserRound,
+  Search,
+  X,
 } from "lucide-react";
-import { ThemeToggle } from "./ThemeToggle";
-
-const items = [
-  { href: "/person", label: "ทะเบียนบุคคล", icon: UserRound },
-  { href: "/visit", label: "ทะเบียนการรับบริการ", icon: ClipboardList },
-  { href: "/chronic", label: "ทะเบียนผู้ป่วยโรคเรื้อรัง", icon: HeartPulse },
-  { href: "/epi", label: "ทะเบียน EPI", icon: Syringe },
-  { href: "/provider", label: "ทะเบียนผู้ให้บริการ", icon: Stethoscope },
-];
+import { navigationItems } from "./navigationItems";
 
 export function Sidebar() {
   const [collapsed, setCollapsed] = useState(false);
+  const [query, setQuery] = useState("");
+
+  const filteredItems = useMemo(() => {
+    const q = query.trim().toLowerCase();
+    if (!q) return navigationItems;
+    return navigationItems.filter(
+      (item) =>
+        item.label.toLowerCase().includes(q) ||
+        item.shortLabel.toLowerCase().includes(q) ||
+        item.href.toLowerCase().includes(q),
+    );
+  }, [query]);
+
+  function toggleCollapsed() {
+    setCollapsed((value) => !value);
+    if (!collapsed) setQuery("");
+  }
 
   return (
     <aside
@@ -44,12 +50,12 @@ export function Sidebar() {
             <span className="inline-flex h-8 w-8 shrink-0 items-center justify-center bg-[var(--invert)] text-[var(--invert-fg)]">
               <Activity size={16} />
             </span>
-            <span className="text-base font-semibold tracking-tight">i-EHR</span>
+            <span className="text-base font-semibold tracking-normal">i-EHR</span>
           </Link>
         )}
         <button
           type="button"
-          onClick={() => setCollapsed((v) => !v)}
+          onClick={toggleCollapsed}
           aria-label={collapsed ? "ขยายแถบเมนู" : "ย่อแถบเมนู"}
           className="inline-flex h-[34px] w-[34px] shrink-0 items-center justify-center border border-[var(--border)] bg-[var(--surface)] text-[var(--text-muted)] hover:border-[var(--invert)] hover:bg-[var(--surface-2)] hover:text-[var(--text)]"
         >
@@ -59,11 +65,38 @@ export function Sidebar() {
 
       <nav className="flex flex-1 flex-col gap-0.5 p-3">
         {!collapsed && (
-          <p className="px-3 pb-2 pt-3 text-[10px] font-semibold uppercase tracking-[0.18em] text-[var(--text-faint)]">
-            ทะเบียน
-          </p>
+          <>
+            <div className="relative mb-2">
+              <Search
+                size={15}
+                className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-[var(--text-faint)]"
+              />
+              <input
+                type="search"
+                value={query}
+                onChange={(event) => setQuery(event.target.value)}
+                placeholder="ค้นหาเมนู"
+                aria-label="ค้นหาเมนู"
+                className="h-[34px] w-full border border-[var(--border)] bg-[var(--bg)] pl-9 pr-8 text-xs text-[var(--text)] outline-none placeholder:text-xs placeholder:text-[var(--text-faint)] focus:border-[var(--invert)]"
+              />
+              {query && (
+                <button
+                  type="button"
+                  onClick={() => setQuery("")}
+                  aria-label="ล้างคำค้นหา"
+                  className="absolute right-2 top-1/2 inline-flex h-6 w-6 -translate-y-1/2 items-center justify-center text-[var(--text-faint)] hover:text-[var(--text)]"
+                >
+                  <X size={14} />
+                </button>
+              )}
+            </div>
+            <p className="px-3 pb-2 pt-1 text-[10px] font-semibold uppercase tracking-[0.18em] text-[var(--text-faint)]">
+              ทะเบียน
+            </p>
+          </>
         )}
-        {items.map(({ href, label, icon: Icon }) => (
+
+        {filteredItems.map(({ href, label, icon: Icon }) => (
           <Link
             key={href}
             href={href}
@@ -76,20 +109,13 @@ export function Sidebar() {
             {!collapsed && <span className="truncate">{label}</span>}
           </Link>
         ))}
+
+        {!collapsed && filteredItems.length === 0 && (
+          <p className="px-3 py-2 text-sm text-[var(--text-faint)]">ไม่พบเมนู</p>
+        )}
       </nav>
 
-      <div
-        className={`flex items-center gap-2 border-t border-[var(--border)] p-3 ${
-          collapsed ? "justify-center" : "justify-between"
-        }`}
-      >
-        {!collapsed && (
-          <span className="text-[10px] font-semibold uppercase tracking-[0.18em] text-[var(--text-faint)]">
-            ธีม
-          </span>
-        )}
-        <ThemeToggle />
-      </div>
+      <div className="border-t border-[var(--border)] p-3" />
     </aside>
   );
 }
