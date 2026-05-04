@@ -14,6 +14,10 @@ type Props = {
 
 const MAX_VISIBLE = 50;
 
+function typedCode(value: string) {
+  return value.trim().split(/\s+-\s+|\s+/)[0] ?? "";
+}
+
 export function LookupCombobox({
   name,
   options,
@@ -85,10 +89,11 @@ export function LookupCombobox({
         value={text}
         placeholder={placeholder ?? "ค้นหารหัสหรือชื่อ..."}
         onChange={(e) => {
-          setText(e.target.value);
+          const next = e.target.value;
+          setText(next);
+          setCode(typedCode(next));
           setOpen(true);
           setHighlight(0);
-          if (e.target.value === "") setCode("");
         }}
         onFocus={() => setOpen(true)}
         onKeyDown={onKeyDown}
