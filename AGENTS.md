@@ -36,7 +36,7 @@
 ## Testing
 
 - use `playwright-cli` skill to test ux/ui 
-- Artifacts that produce on test should collect at dir .playwright-cli
+- Artifacts that produce on testing should collect at dir .playwright-cli
 - should call  `playwright-cli show` for user to see your testing
 - if user ask for **annotate** call `playwright-cli anotate`  call  this command  and wait for user done.
     ```

@@ -53,7 +53,6 @@ export function TopToolbar() {
             <CalendarDays size={15} className="text-[var(--text-faint)]" />
             <span className="truncate">{todayLabel()}</span>
           </div>
-
           <ThemeToggle />
         </div>
       </div>

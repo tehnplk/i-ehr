@@ -6,7 +6,7 @@ import {
   RotateCcw,
   Save,
   Search,
-  Stethoscope,
+  UsersRound,
 } from "lucide-react";
 import { db } from "@/lib/db";
 import { LookupCombobox } from "@/components/LookupCombobox";
@@ -18,6 +18,7 @@ type SearchParams = Promise<{ q?: string; edit?: string; mode?: string }>;
 
 type ProviderRow = {
   id: number;
+  hospcode: string | null;
   provider: string | null;
   registerno: string | null;
   council: string | null;
@@ -26,10 +27,12 @@ type ProviderRow = {
   name: string | null;
   lname: string | null;
   sex: string | null;
+  birth: string | null;
   providertype: string | null;
   startdate: string | null;
+  outdate: string | null;
   updated_at: string;
-  [key: string]: string | number | Date | null;
+  [key: string]: string | number | Date | null | undefined;
 };
 
 function textValue(value: unknown) {
@@ -49,15 +52,13 @@ function formatDateTime(value: string | Date | null | undefined) {
 function buildUrl(query: string, values: Record<string, string | undefined>) {
   const search = new URLSearchParams();
   if (query) search.set("q", query);
-  for (const [key, value] of Object.entries(values)) {
-    if (value) search.set(key, value);
-  }
-  const result = search.toString();
-  return result ? `/provider?${result}` : "/provider";
+  for (const [k, v] of Object.entries(values)) if (v) search.set(k, v);
+  const r = search.toString();
+  return r ? `/provider?${r}` : "/provider";
 }
 
 async function getProviders(query: string) {
-  const providersQuery = db<ProviderRow>("provider")
+  const q = db<ProviderRow>("provider")
     .select([...listColumns])
     .orderBy("updated_at", "desc")
     .orderBy("id", "desc")
@@ -65,9 +66,8 @@ async function getProviders(query: string) {
 
   if (query) {
     const like = `%${query}%`;
-    providersQuery.where((builder) => {
-      builder
-        .whereILike("provider", like)
+    q.where((b) => {
+      b.whereILike("provider", like)
         .orWhereILike("registerno", like)
         .orWhereILike("cid", like)
         .orWhereILike("name", like)
@@ -75,13 +75,13 @@ async function getProviders(query: string) {
     });
   }
 
-  return providersQuery;
+  return q;
 }
 
 async function getSelected(id?: string) {
-  const selectedId = Number(id);
-  if (!Number.isInteger(selectedId) || selectedId < 1) return null;
-  return db<ProviderRow>("provider").where({ id: selectedId }).first();
+  const n = Number(id);
+  if (!Number.isInteger(n) || n < 1) return null;
+  return db<ProviderRow>("provider").where({ id: n }).first();
 }
 
 type LookupRow = { code: string; name: string };
@@ -91,17 +91,17 @@ async function getLookups(): Promise<LookupMap> {
   const tables = Array.from(
     new Set(
       providerFields
-        .map((field) => field.lookup)
-        .filter((table): table is string => typeof table === "string"),
+        .map((f) => f.lookup)
+        .filter((t): t is string => typeof t === "string"),
     ),
   );
 
   const entries = await Promise.all(
-    tables.map(async (table) => {
-      const rows = await db(table)
+    tables.map(async (t) => {
+      const rows = await db(t)
         .select<LookupRow[]>(["code", "name"])
         .orderBy("code");
-      return [table, rows] as const;
+      return [t, rows] as const;
     }),
   );
 
@@ -114,20 +114,7 @@ function lookupName(
   code: string | null | undefined,
 ) {
   if (!table || !code) return "";
-  return lookups[table]?.find((row) => row.code === code)?.name ?? "";
-}
-
-function providertypeLabel(lookups: LookupMap, code: string | null) {
-  if (!code) return "-";
-  const codes = code.split(",").map((value) => value.trim()).filter(Boolean);
-  if (codes.length === 0) return "-";
-
-  return codes
-    .map((value) => {
-      const name = lookupName(lookups, "c_providertype", value);
-      return name ? `${value} ${name}` : value;
-    })
-    .join(", ");
+  return lookups[table]?.find((r) => r.code === code)?.name ?? "";
 }
 
 export default async function ProviderPage({
@@ -137,7 +124,7 @@ export default async function ProviderPage({
 }) {
   const params = await searchParams;
   const query = params.q?.trim() ?? "";
-  const [rows, selected, totalResult, lookups] = await Promise.all([
+  const [providers, selected, totalRow, lookups] = await Promise.all([
     getProviders(query),
     getSelected(params.edit),
     db("provider").count<{ count: string }[]>("id as count").first(),
@@ -146,18 +133,20 @@ export default async function ProviderPage({
   const modalMode = params.mode === "create" ? "create" : selected ? "edit" : null;
   const isEditing = Boolean(selected);
   const formAction = isEditing ? updateProvider : createProvider;
-  const total = Number(totalResult?.count ?? 0);
+  const total = Number(totalRow?.count ?? 0);
   const closeHref = buildUrl(query, {});
   const newHref = buildUrl(query, { mode: "create" });
 
   return (
-    <main className="min-h-screen bg-[var(--bg)] text-[var(--text)]">
+    <main className="min-h-full bg-[var(--bg)] text-[var(--text)]">
       <div className="mx-auto flex w-full max-w-[1500px] flex-col gap-3 px-4 py-4 sm:px-6 lg:px-8">
-        <header className="flex flex-col gap-3 border-b border-[var(--border)] pb-3 lg:flex-row lg:items-center lg:justify-between">
-          <h1 className="flex items-center gap-2 text-xl font-semibold tracking-normal text-[var(--text)]">
-            <Stethoscope size={20} className="text-[var(--invert)]" />
-            <span>ทะเบียนผู้ให้บริการ</span>
-          </h1>
+        <header className="flex flex-col gap-3 border-b border-[var(--border)] pb-3 lg:flex-row lg:items-end lg:justify-between">
+          <div>
+            <h1 className="flex items-center gap-2 text-xl font-semibold tracking-normal text-[var(--text)]">
+              <UsersRound size={20} className="text-[var(--invert)]" />
+              <span>ทะเบียนผู้ให้บริการ</span>
+            </h1>
+          </div>
 
           <div className="flex items-center gap-2.5 self-start lg:self-auto">
             <div className="flex h-[34px] min-w-22 items-center justify-between gap-3 border border-[var(--border)] bg-[var(--surface)] px-3.5">
@@ -189,7 +178,7 @@ export default async function ProviderPage({
                 <input
                   name="q"
                   defaultValue={query}
-                  placeholder="ค้นหารหัสผู้ให้บริการ, เลขทะเบียน, CID, ชื่อ"
+                  placeholder="ค้นหา ชื่อ, นามสกุล, CID, เลขที่ใบประกอบ"
                   className="h-[34px] w-full border border-[var(--border)] bg-[var(--surface-input)] pl-10 pr-3 text-xs outline-none transition placeholder:text-xs focus:border-[var(--invert)]"
                 />
               </label>
@@ -213,71 +202,74 @@ export default async function ProviderPage({
           </div>
 
           <div className="overflow-x-auto">
-            <table className="w-full min-w-[1100px] border-collapse text-left text-sm">
+            <table className="w-full min-w-[1000px] border-collapse text-left text-sm">
               <thead className="bg-[var(--surface-3)] text-xs uppercase text-[var(--text-dim)]">
                 <tr>
                   <th className="px-4 py-3 font-semibold">ID</th>
-                  <th className="px-4 py-3 font-semibold">รหัสผู้ให้บริการ</th>
                   <th className="px-4 py-3 font-semibold">ชื่อ-นามสกุล</th>
-                  <th className="px-4 py-3 font-semibold">สภาวิชาชีพ</th>
-                  <th className="px-4 py-3 font-semibold">ประเภท</th>
-                  <th className="px-4 py-3 font-semibold">วันที่เริ่ม</th>
+                  <th className="px-4 py-3 font-semibold">รหัส/ประเภท</th>
+                  <th className="px-4 py-3 font-semibold">ใบประกอบ/สภา</th>
+                  <th className="px-4 py-3 font-semibold">CID</th>
                   <th className="px-4 py-3 font-semibold">อัปเดตล่าสุด</th>
                   <th className="px-4 py-3 text-right font-semibold">จัดการ</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-[var(--border-subtle)]">
-                {rows.map((row) => (
+                {providers.map((p) => (
                   <tr
-                    key={row.id}
+                    key={p.id}
                     className={
-                      selected?.id === row.id
+                      selected?.id === p.id
                         ? "bg-[var(--row-active)]"
                         : "bg-[var(--surface)] hover:bg-[var(--surface-hover)]"
                     }
                   >
                     <td className="px-4 py-3 font-mono text-xs text-[var(--text-muted)]">
-                      {row.id}
+                      {p.id}
                     </td>
-                    <td className="px-4 py-3 font-mono">{row.provider || "-"}</td>
                     <td className="px-4 py-3">
                       <div className="font-medium">
                         {[
-                          lookupName(lookups, "c_prename", row.prename),
-                          row.name,
-                          row.lname,
+                          lookupName(lookups, "c_prename", p.prename as string | null),
+                          p.name,
+                          p.lname,
                         ]
                           .filter(Boolean)
                           .join(" ") || "-"}
                       </div>
                       <div className="text-xs text-[var(--text-faint)]">
-                        {lookupName(lookups, "c_sex", row.sex) || "-"} ·{" "}
-                        {row.cid || "-"}
+                        {lookupName(lookups, "c_sex", p.sex) || "-"} ·{" "}
+                        {p.birth || "-"}
                       </div>
                     </td>
                     <td className="px-4 py-3">
-                      {lookupName(lookups, "c_council", row.council) || "-"}
+                      <div className="font-mono text-xs">{p.provider || "-"}</div>
+                      <div className="text-xs text-[var(--text-faint)]">
+                        {lookupName(lookups, "c_providertype", p.providertype) ||
+                          "-"}
+                      </div>
                     </td>
                     <td className="px-4 py-3">
-                      {providertypeLabel(lookups, row.providertype)}
+                      <div className="font-mono text-xs">{p.registerno || "-"}</div>
+                      <div className="text-xs text-[var(--text-faint)]">
+                        {lookupName(lookups, "c_council", p.council) || "-"}
+                      </div>
                     </td>
-                    <td className="px-4 py-3 font-mono text-xs">
-                      {row.startdate || "-"}
-                    </td>
+                    <td className="px-4 py-3">{p.cid || "-"}</td>
                     <td className="px-4 py-3 text-xs text-[var(--text-dim)]">
-                      {formatDateTime(row.updated_at)}
+                      {formatDateTime(p.updated_at)}
                     </td>
                     <td className="px-4 py-3">
                       <div className="flex justify-end gap-2">
                         <Link
-                          href={buildUrl(query, { edit: String(row.id) })}
+                          href={buildUrl(query, { edit: String(p.id) })}
                           className="inline-flex h-[34px] w-[34px] items-center justify-center border border-[var(--border)] text-[var(--text-muted)] hover:border-[var(--invert)]"
                           title="แก้ไข"
                         >
                           <Edit3 size={15} />
                         </Link>
                         <form action={deleteProvider}>
-                          <input type="hidden" name="id" value={row.id} />
+                          <input type="hidden" name="id" value={p.id} />
                           <DeleteConfirmButton text="ต้องการลบข้อมูลผู้ให้บริการนี้หรือไม่" />
                         </form>
                       </div>
@@ -288,9 +280,9 @@ export default async function ProviderPage({
             </table>
           </div>
 
-          {rows.length === 0 ? (
+          {providers.length === 0 ? (
             <div className="flex min-h-52 flex-col items-center justify-center gap-3 border-t border-[var(--border-subtle)] px-4 text-center">
-              <Stethoscope className="text-[var(--text-faint)]" size={34} />
+              <UsersRound className="text-[var(--text-faint)]" size={34} />
               <p className="text-sm font-medium">ไม่พบข้อมูลผู้ให้บริการ</p>
               <p className="text-sm text-[var(--text-dim)]">
                 ลองค้นหาด้วยคำอื่น หรือเพิ่มข้อมูลผู้ให้บริการใหม่
@@ -302,7 +294,7 @@ export default async function ProviderPage({
 
       {modalMode ? (
         <div className="fixed inset-0 z-40 flex items-center justify-center bg-[var(--invert)]/40 p-4 backdrop-blur-[2px]">
-          <div className="flex max-h-[92vh] w-full max-w-6xl flex-col overflow-hidden border border-[var(--border)] bg-[var(--surface)] shadow-[0_24px_80px_rgba(15,143,140,0.14)]">
+          <div className="flex max-h-[92vh] w-full max-w-6xl flex-col border border-[var(--border)] bg-[var(--surface)] shadow-[0_24px_80px_rgba(15,143,140,0.14)]">
             <div className="flex items-start justify-between gap-4 border-b border-[var(--border-soft)] px-5 py-4 sm:px-6">
               <div>
                 <p className="text-xs font-medium uppercase tracking-[0.18em] text-[var(--text-faint)]">
@@ -328,7 +320,6 @@ export default async function ProviderPage({
                       const current = textValue(selected?.[field.name]);
                       const inputClass =
                         "h-[34px] w-full border border-[var(--border)] bg-[var(--surface-input)] px-3 text-xs outline-none transition placeholder:text-xs focus:border-[var(--invert)]";
-
                       return (
                         <label
                           key={field.name}

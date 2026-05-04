@@ -95,6 +95,7 @@ async function getLookups(): Promise<LookupMap> {
     tables.map(async (table) => {
       const rows = await db(table)
         .select<LookupRow[]>(["code", "name"])
+        .whereNotNull("code")
         .orderBy("code");
       return [table, rows] as const;
     }),
@@ -144,7 +145,7 @@ export default async function ChronicPage({
     "h-[34px] w-full border border-[var(--border)] bg-[var(--surface-input)] px-3 text-xs outline-none transition placeholder:text-xs focus:border-[var(--invert)]";
 
   return (
-    <main className="min-h-screen bg-[var(--bg)] text-[var(--text)]">
+    <main className="min-h-full bg-[var(--bg)] text-[var(--text)]">
       <div className="mx-auto flex w-full max-w-[1500px] flex-col gap-3 px-4 py-4 sm:px-6 lg:px-8">
         <header className="flex flex-col gap-3 border-b border-[var(--border)] pb-3 lg:flex-row lg:items-center lg:justify-between">
           <h1 className="flex items-center gap-2 text-xl font-semibold tracking-normal text-[var(--text)]">
@@ -249,8 +250,12 @@ export default async function ChronicPage({
                     <td className="px-4 py-3 font-mono text-xs">
                       {row.date_diag || "-"}
                     </td>
-                    <td className="px-4 py-3 font-mono text-xs">{row.hosp_dx || "-"}</td>
-                    <td className="px-4 py-3 font-mono text-xs">{row.hosp_rx || "-"}</td>
+                    <td className="px-4 py-3 text-xs">
+                      {codeLabel(lookups, "c_hospcode", row.hosp_dx)}
+                    </td>
+                    <td className="px-4 py-3 text-xs">
+                      {codeLabel(lookups, "c_hospcode", row.hosp_rx)}
+                    </td>
                     <td className="px-4 py-3">
                       <div className="font-mono text-xs">{row.date_disch || "-"}</div>
                       <div className="text-xs text-[var(--text-faint)]">
@@ -292,7 +297,7 @@ export default async function ChronicPage({
 
       {modalMode ? (
         <div className="fixed inset-0 z-40 flex items-center justify-center bg-[var(--invert)]/40 p-4 backdrop-blur-[2px]">
-          <div className="flex max-h-[92vh] w-full max-w-5xl flex-col overflow-hidden border border-[var(--border)] bg-[var(--surface)] shadow-[0_24px_80px_rgba(15,143,140,0.14)]">
+          <div className="flex max-h-[92vh] w-full max-w-5xl flex-col border border-[var(--border)] bg-[var(--surface)] shadow-[0_24px_80px_rgba(15,143,140,0.14)]">
             <div className="flex items-start justify-between gap-4 border-b border-[var(--border-soft)] px-5 py-4 sm:px-6">
               <div>
                 <p className="text-xs font-medium uppercase tracking-[0.18em] text-[var(--text-faint)]">

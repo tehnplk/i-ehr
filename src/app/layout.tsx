@@ -36,12 +36,14 @@ export default function RootLayout({
       <head>
         <script dangerouslySetInnerHTML={{ __html: themeInitScript }} />
       </head>
-      <body className="min-h-full bg-[var(--bg)] text-[var(--text)]">
-        <div className="flex min-h-screen">
+      <body className="h-full overflow-hidden bg-[var(--bg)] text-[var(--text)]">
+        <div className="flex h-screen min-h-0">
           <Sidebar />
-          <div className="flex min-h-screen min-w-0 flex-1 flex-col">
+          <div className="flex min-h-0 min-w-0 flex-1 flex-col">
             <TopToolbar />
-            {children}
+            <div className="min-h-0 flex-1 overflow-y-auto overflow-x-hidden [scrollbar-gutter:stable]">
+              {children}
+            </div>
           </div>
         </div>
       </body>

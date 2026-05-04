@@ -7,7 +7,12 @@ export type ChronicField = {
 };
 
 export const chronicFields: ChronicField[] = [
-  { name: "hospcode", label: "รหัสหน่วยบริการ", width: "short" },
+  {
+    name: "hospcode",
+    label: "รหัสหน่วยบริการ",
+    width: "short",
+    lookup: "c_hospcode",
+  },
   { name: "pid", label: "PID", width: "short" },
   { name: "cid", label: "CID", width: "medium" },
   { name: "date_diag", label: "วันที่วินิจฉัย", width: "medium" },
@@ -17,8 +22,18 @@ export const chronicFields: ChronicField[] = [
     width: "medium",
     lookup: "c_chronic",
   },
-  { name: "hosp_dx", label: "หน่วยวินิจฉัย", width: "medium" },
-  { name: "hosp_rx", label: "หน่วยบริการที่รับบริการประจำ", width: "medium" },
+  {
+    name: "hosp_dx",
+    label: "หน่วยบริการที่วินิจฉัยครั้งแรก",
+    width: "medium",
+    lookup: "c_hospcode",
+  },
+  {
+    name: "hosp_rx",
+    label: "หน่วยบริการที่รับบริการประจำ",
+    width: "medium",
+    lookup: "c_hospcode",
+  },
   { name: "date_disch", label: "วันที่จำหน่าย", width: "medium" },
   {
     name: "typedisch",

@@ -33,11 +33,13 @@ export const providerFields: ProviderField[] = [
 export const listColumns = [
   "id",
   "provider",
+  "registerno",
   "cid",
   "prename",
   "name",
   "lname",
   "sex",
+  "birth",
   "council",
   "providertype",
   "startdate",

@@ -162,7 +162,7 @@ export default async function PersonPage({
   const newHref = buildPersonUrl(query, { mode: "create" });
 
   return (
-    <main className="min-h-screen bg-[var(--bg)] text-[var(--text)]">
+    <main className="min-h-full bg-[var(--bg)] text-[var(--text)]">
       <div className="mx-auto flex w-full max-w-[1500px] flex-col gap-3 px-4 py-4 sm:px-6 lg:px-8">
         <header className="flex flex-col gap-3 border-b border-[var(--border)] pb-3 lg:flex-row lg:items-end lg:justify-between">
           <div>
@@ -307,7 +307,7 @@ export default async function PersonPage({
 
       {modalMode ? (
         <div className="fixed inset-0 z-40 flex items-center justify-center bg-[var(--invert)]/40 p-4 backdrop-blur-[2px]">
-          <div className="flex max-h-[92vh] w-full max-w-6xl flex-col overflow-hidden border border-[var(--border)] bg-[var(--surface)] shadow-[0_24px_80px_rgba(15,143,140,0.14)]">
+          <div className="flex max-h-[92vh] w-full max-w-6xl flex-col border border-[var(--border)] bg-[var(--surface)] shadow-[0_24px_80px_rgba(15,143,140,0.14)]">
             <div className="flex items-start justify-between gap-4 border-b border-[var(--border-soft)] px-5 py-4 sm:px-6">
               <div>
                 <p className="text-xs font-medium uppercase tracking-[0.18em] text-[var(--text-faint)]">
