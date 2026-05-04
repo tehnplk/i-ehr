@@ -8,7 +8,6 @@ import {
   ChevronRight,
   ClipboardList,
   HeartPulse,
-  IdCard,
   Stethoscope,
   Syringe,
   UserRound,
@@ -16,12 +15,11 @@ import {
 import { ThemeToggle } from "./ThemeToggle";
 
 const items = [
-  { href: "/person", label: "ทะเบียน Person", icon: UserRound },
-  { href: "/patient", label: "ทะเบียน Patient", icon: IdCard },
-  { href: "/visit", label: "ทะเบียน Visit", icon: ClipboardList },
-  { href: "/ncd", label: "ทะเบียน NCD", icon: HeartPulse },
+  { href: "/person", label: "ทะเบียนบุคคล", icon: UserRound },
+  { href: "/visit", label: "ทะเบียนการรับบริการ", icon: ClipboardList },
+  { href: "/chronic", label: "ทะเบียนผู้ป่วยโรคเรื้อรัง", icon: HeartPulse },
   { href: "/epi", label: "ทะเบียน EPI", icon: Syringe },
-  { href: "/provider", label: "ทะเบียน Provider", icon: Stethoscope },
+  { href: "/provider", label: "ทะเบียนผู้ให้บริการ", icon: Stethoscope },
 ];
 
 export function Sidebar() {
@@ -52,8 +50,8 @@ export function Sidebar() {
         <button
           type="button"
           onClick={() => setCollapsed((v) => !v)}
-          aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
-          className="inline-flex h-9 w-9 shrink-0 items-center justify-center border border-[var(--border)] bg-[var(--surface)] text-[var(--text-muted)] hover:border-[var(--invert)] hover:bg-[var(--surface-2)] hover:text-[var(--text)]"
+          aria-label={collapsed ? "ขยายแถบเมนู" : "ย่อแถบเมนู"}
+          className="inline-flex h-[34px] w-[34px] shrink-0 items-center justify-center border border-[var(--border)] bg-[var(--surface)] text-[var(--text-muted)] hover:border-[var(--invert)] hover:bg-[var(--surface-2)] hover:text-[var(--text)]"
         >
           {collapsed ? <ChevronRight size={16} /> : <ChevronLeft size={16} />}
         </button>
@@ -70,7 +68,7 @@ export function Sidebar() {
             key={href}
             href={href}
             title={collapsed ? label : undefined}
-            className={`inline-flex h-10 items-center gap-3 border border-transparent text-sm font-medium text-[var(--text-muted)] hover:border-[var(--border)] hover:bg-[var(--surface-2)] hover:text-[var(--text)] ${
+            className={`inline-flex h-[34px] items-center gap-3 border border-transparent text-sm font-medium text-[var(--text-muted)] hover:border-[var(--border)] hover:bg-[var(--surface-2)] hover:text-[var(--text)] ${
               collapsed ? "justify-center px-0" : "px-3"
             }`}
           >
@@ -87,7 +85,7 @@ export function Sidebar() {
       >
         {!collapsed && (
           <span className="text-[10px] font-semibold uppercase tracking-[0.18em] text-[var(--text-faint)]">
-            Theme
+            ธีม
           </span>
         )}
         <ThemeToggle />

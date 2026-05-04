@@ -87,37 +87,37 @@ export default async function Home() {
 
   const stats = [
     {
-      label: "Visits",
+      label: "การรับบริการ",
       value: serviceCount,
-      hint: "service records today",
+      hint: "รายการรับบริการวันนี้",
       icon: Activity,
     },
     {
-      label: "Patients",
+      label: "ผู้ป่วย",
       value: patientsToday,
-      hint: "distinct PIDs served",
+      hint: "จำนวน PID ที่มารับบริการไม่ซ้ำ",
       icon: Users,
     },
     {
-      label: "Diagnoses",
+      label: "การวินิจฉัย",
       value: diagTotal,
-      hint: `OPD ${diagOpdCount.toLocaleString()} · IPD ${diagIpdCount.toLocaleString()}`,
+      hint: `OPD ${diagOpdCount.toLocaleString()} / IPD ${diagIpdCount.toLocaleString()}`,
       icon: Stethoscope,
     },
     {
-      label: "Drug orders",
+      label: "รายการยา",
       value: drugTotal,
-      hint: `OPD ${drugOpdCount.toLocaleString()} · IPD ${drugIpdCount.toLocaleString()}`,
+      hint: `OPD ${drugOpdCount.toLocaleString()} / IPD ${drugIpdCount.toLocaleString()}`,
       icon: Pill,
     },
   ];
 
   const breakdown = [
-    { label: "service", count: serviceCount, tone: "Visit log" },
-    { label: "diagnosis_opd", count: diagOpdCount, tone: "OPD diagnosis" },
-    { label: "diagnosis_ipd", count: diagIpdCount, tone: "IPD diagnosis" },
-    { label: "drug_opd", count: drugOpdCount, tone: "OPD drug order" },
-    { label: "drug_ipd", count: drugIpdCount, tone: "IPD drug order" },
+    { label: "service", count: serviceCount, tone: "บันทึกการรับบริการ" },
+    { label: "diagnosis_opd", count: diagOpdCount, tone: "การวินิจฉัย OPD" },
+    { label: "diagnosis_ipd", count: diagIpdCount, tone: "การวินิจฉัย IPD" },
+    { label: "drug_opd", count: drugOpdCount, tone: "รายการยา OPD" },
+    { label: "drug_ipd", count: drugIpdCount, tone: "รายการยา IPD" },
   ];
 
   return (
@@ -131,18 +131,18 @@ export default async function Home() {
             </span>
             <div>
               <h1 className="text-3xl font-semibold tracking-tight text-[var(--text)]">
-                Electronic Health Record
+                เวชระเบียนอิเล็กทรอนิกส์
               </h1>
               <p className="mt-1 max-w-2xl text-sm leading-5 text-[var(--text-dim)]">
-                Daily service summary for {label}.
+                สรุปรายการให้บริการประจำวันสำหรับ {label}
               </p>
             </div>
           </div>
 
           <div className="flex flex-wrap items-center gap-2.5 self-start lg:self-auto">
-            <div className="flex h-10 items-center gap-3 border border-[var(--border)] bg-[var(--surface)] px-3.5">
+            <div className="flex h-[34px] items-center gap-3 border border-[var(--border)] bg-[var(--surface)] px-3.5">
               <span className="text-xs font-medium uppercase tracking-[0.14em] text-[var(--text-faint)]">
-                Persons
+                บุคคล
               </span>
               <span className="text-base font-semibold text-[var(--text)]">
                 {totalPersons.toLocaleString()}
@@ -150,10 +150,10 @@ export default async function Home() {
             </div>
             <Link
               href="/person"
-              className="inline-flex h-10 items-center justify-center gap-2 border border-[var(--invert)] bg-[var(--invert)] px-4 text-sm font-medium text-[var(--invert-fg)] hover:bg-[var(--invert-hover)]"
+              className="inline-flex h-[34px] items-center justify-center gap-2 border border-[var(--invert)] bg-[var(--invert)] px-4 text-sm font-medium text-[var(--invert-fg)] hover:bg-[var(--invert-hover)]"
             >
               <Users size={15} />
-              Open Person
+              เปิดทะเบียนบุคคล
             </Link>
           </div>
         </header>
@@ -168,7 +168,7 @@ export default async function Home() {
                 <span className="text-xs font-medium uppercase tracking-[0.16em] text-[var(--text-faint)]">
                   {name}
                 </span>
-                <span className="inline-flex h-9 w-9 items-center justify-center border border-[var(--border-soft)] bg-[var(--surface-2)] text-[var(--text-muted)]">
+                <span className="inline-flex h-[34px] w-[34px] items-center justify-center border border-[var(--border-soft)] bg-[var(--surface-2)] text-[var(--text-muted)]">
                   <Icon size={17} />
                 </span>
               </div>
@@ -186,7 +186,7 @@ export default async function Home() {
               <div className="flex items-center gap-2">
                 <ClipboardList size={16} className="text-[var(--text-muted)]" />
                 <h2 className="text-sm font-semibold uppercase tracking-[0.14em] text-[var(--text-muted)]">
-                  Today by table
+                  สรุปวันนี้ตามตาราง
                 </h2>
               </div>
               <span className="font-mono text-xs text-[var(--text-faint)]">{iso}</span>
@@ -194,9 +194,9 @@ export default async function Home() {
             <table className="w-full border-collapse text-left text-sm">
               <thead className="bg-[var(--surface-3)] text-xs uppercase text-[var(--text-dim)]">
                 <tr>
-                  <th className="px-5 py-3 font-semibold">Table</th>
-                  <th className="px-5 py-3 font-semibold">Type</th>
-                  <th className="px-5 py-3 text-right font-semibold">Rows today</th>
+                  <th className="px-5 py-3 font-semibold">ตาราง</th>
+                  <th className="px-5 py-3 font-semibold">ประเภท</th>
+                  <th className="px-5 py-3 text-right font-semibold">รายการวันนี้</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-[var(--border-subtle)]">
@@ -220,34 +220,34 @@ export default async function Home() {
               <div className="flex items-center gap-2 text-[var(--text-muted)]">
                 <HeartPulse size={16} />
                 <h3 className="text-sm font-semibold uppercase tracking-[0.14em]">
-                  Snapshot
+                  ภาพรวม
                 </h3>
               </div>
               <dl className="mt-4 space-y-3 text-sm">
                 <div className="flex items-baseline justify-between gap-3 border-b border-[var(--border-subtle)] pb-2">
-                  <dt className="text-[var(--text-dim)]">Date</dt>
+                  <dt className="text-[var(--text-dim)]">วันที่</dt>
                   <dd className="font-mono text-[var(--text)]">{iso}</dd>
                 </div>
                 <div className="flex items-baseline justify-between gap-3 border-b border-[var(--border-subtle)] pb-2">
-                  <dt className="text-[var(--text-dim)]">Visits</dt>
+                  <dt className="text-[var(--text-dim)]">การรับบริการ</dt>
                   <dd className="font-semibold tabular-nums">
                     {serviceCount.toLocaleString()}
                   </dd>
                 </div>
                 <div className="flex items-baseline justify-between gap-3 border-b border-[var(--border-subtle)] pb-2">
-                  <dt className="text-[var(--text-dim)]">Patients</dt>
+                  <dt className="text-[var(--text-dim)]">ผู้ป่วย</dt>
                   <dd className="font-semibold tabular-nums">
                     {patientsToday.toLocaleString()}
                   </dd>
                 </div>
                 <div className="flex items-baseline justify-between gap-3 border-b border-[var(--border-subtle)] pb-2">
-                  <dt className="text-[var(--text-dim)]">Diagnoses</dt>
+                  <dt className="text-[var(--text-dim)]">การวินิจฉัย</dt>
                   <dd className="font-semibold tabular-nums">
                     {diagTotal.toLocaleString()}
                   </dd>
                 </div>
                 <div className="flex items-baseline justify-between gap-3">
-                  <dt className="text-[var(--text-dim)]">Drug orders</dt>
+                  <dt className="text-[var(--text-dim)]">รายการยา</dt>
                   <dd className="font-semibold tabular-nums">
                     {drugTotal.toLocaleString()}
                   </dd>
@@ -257,15 +257,15 @@ export default async function Home() {
 
             <article className="border border-[var(--border)] bg-[var(--invert)] p-5 text-[var(--invert-fg)]">
               <h3 className="text-sm font-semibold uppercase tracking-[0.14em] text-[var(--invert-fg)]/80">
-                Quick links
+                ลิงก์ด่วน
               </h3>
               <div className="mt-4 flex flex-col gap-2">
                 <Link
                   href="/person"
-                  className="inline-flex h-10 items-center justify-between border border-white/20 bg-[var(--surface)]/5 px-4 text-sm font-medium hover:bg-[var(--surface)]/10"
+                  className="inline-flex h-[34px] items-center justify-between border border-white/20 bg-[var(--surface)]/5 px-4 text-sm font-medium hover:bg-[var(--surface)]/10"
                 >
                   <span className="inline-flex items-center gap-2">
-                    <Users size={15} /> Person registry
+                    <Users size={15} /> ทะเบียนบุคคล
                   </span>
                   <span className="text-xs text-[var(--invert-fg)]/60">/person</span>
                 </Link>

@@ -2,16 +2,15 @@ import Link from "next/link";
 import {
   CirclePlus,
   CircleX,
-  Database,
   Edit3,
   RotateCcw,
   Save,
   Search,
-  Trash2,
   UserRound,
 } from "lucide-react";
 import { db } from "@/lib/db";
 import { LookupCombobox } from "@/components/LookupCombobox";
+import { DeleteConfirmButton } from "@/components/DeleteConfirmButton";
 import { createPerson, deletePerson, updatePerson } from "./actions";
 import { listColumns, personFields } from "./fields";
 
@@ -166,28 +165,17 @@ export default async function PersonPage({
     <main className="min-h-screen bg-[var(--bg)] text-[var(--text)]">
       <div className="mx-auto flex w-full max-w-[1500px] flex-col gap-3 px-4 py-4 sm:px-6 lg:px-8">
         <header className="flex flex-col gap-3 border-b border-[var(--border)] pb-3 lg:flex-row lg:items-end lg:justify-between">
-          <div className="space-y-1.5">
-            <Link
-              href="/"
-              className="inline-flex items-center gap-2 text-sm font-medium text-[var(--text-dim)] hover:text-[var(--text)]"
-            >
-              <Database size={16} />
-              EHR
-            </Link>
-            <div>
-              <h1 className="text-3xl font-semibold tracking-normal text-[var(--text)]">
-                Person
-              </h1>
-              <p className="mt-1 max-w-2xl text-sm leading-5 text-[var(--text-dim)]">
-                Manage person records in the ehr database.
-              </p>
-            </div>
+          <div>
+            <h1 className="flex items-center gap-2 text-xl font-semibold tracking-normal text-[var(--text)]">
+              <UserRound size={20} className="text-[var(--invert)]" />
+              <span>ทะเบียนบุคคล</span>
+            </h1>
           </div>
 
           <div className="flex items-center gap-2.5 self-start lg:self-auto">
-            <div className="flex h-10 min-w-22 items-center justify-between gap-3 border border-[var(--border)] bg-[var(--surface)] px-3.5">
+            <div className="flex h-[34px] min-w-22 items-center justify-between gap-3 border border-[var(--border)] bg-[var(--surface)] px-3.5">
               <span className="text-xs font-medium uppercase tracking-[0.14em] text-[var(--text-faint)]">
-                Rows
+                รายการ
               </span>
               <span className="text-base font-semibold text-[var(--text)]">
                 {total.toLocaleString()}
@@ -195,10 +183,10 @@ export default async function PersonPage({
             </div>
             <Link
               href={newHref}
-              className="inline-flex h-10 min-w-24 items-center justify-center gap-2 border border-[var(--invert)] bg-[var(--invert)] px-4 text-sm font-medium text-[var(--invert-fg)] hover:bg-[var(--invert-hover)]"
+              className="inline-flex h-[34px] min-w-24 items-center justify-center gap-2 border border-[var(--invert)] bg-[var(--invert)] px-4 text-sm font-medium text-[var(--invert-fg)] hover:bg-[var(--invert-hover)]"
             >
               <CirclePlus size={15} />
-              New
+              เพิ่มใหม่
             </Link>
           </div>
         </header>
@@ -214,25 +202,25 @@ export default async function PersonPage({
                 <input
                   name="q"
                   defaultValue={query}
-                  placeholder="Search CID, PID, HN, name, mobile"
-                  className="h-10 w-full border border-[var(--border)] bg-[var(--surface-input)] pl-10 pr-3 text-sm outline-none transition focus:border-[var(--invert)]"
+                  placeholder="ค้นหา CID, PID, HN, ชื่อ, เบอร์มือถือ"
+                  className="h-[34px] w-full border border-[var(--border)] bg-[var(--surface-input)] pl-10 pr-3 text-sm outline-none transition placeholder:text-xs focus:border-[var(--invert)]"
                 />
               </label>
               <button
                 type="submit"
-                className="inline-flex h-10 min-w-24 items-center justify-center gap-2 border border-[var(--invert)] bg-[var(--invert)] px-4 text-sm font-medium text-[var(--invert-fg)] hover:bg-[var(--invert-hover)]"
+                className="inline-flex h-[34px] min-w-24 items-center justify-center gap-2 border border-[var(--invert)] bg-[var(--invert)] px-4 text-sm font-medium text-[var(--invert-fg)] hover:bg-[var(--invert-hover)]"
               >
                 <Search size={15} />
-                Search
+                ค้นหา
               </button>
             </form>
             {query ? (
               <Link
                 href={closeHref}
-                className="inline-flex h-10 min-w-22 items-center justify-center gap-2 border border-[var(--border)] px-3.5 text-sm font-medium text-[var(--text-muted)] hover:bg-[#f2f4f0]"
+                className="inline-flex h-[34px] min-w-22 items-center justify-center gap-2 border border-[var(--border)] px-3.5 text-sm font-medium text-[var(--text-muted)] hover:bg-[var(--surface-2)]"
               >
                 <RotateCcw size={16} />
-                Clear
+                ล้าง
               </Link>
             ) : null}
           </div>
@@ -244,11 +232,11 @@ export default async function PersonPage({
                   <th className="px-4 py-3 font-semibold">ID</th>
                   <th className="px-4 py-3 font-semibold">CID</th>
                   <th className="px-4 py-3 font-semibold">PID</th>
-                  <th className="px-4 py-3 font-semibold">Name</th>
+                  <th className="px-4 py-3 font-semibold">ชื่อ-นามสกุล</th>
                   <th className="px-4 py-3 font-semibold">HN</th>
-                  <th className="px-4 py-3 font-semibold">Contact</th>
-                  <th className="px-4 py-3 font-semibold">Updated</th>
-                  <th className="px-4 py-3 text-right font-semibold">Action</th>
+                  <th className="px-4 py-3 font-semibold">ติดต่อ</th>
+                  <th className="px-4 py-3 font-semibold">อัปเดตล่าสุด</th>
+                  <th className="px-4 py-3 text-right font-semibold">จัดการ</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-[var(--border-subtle)]">
@@ -290,20 +278,14 @@ export default async function PersonPage({
                       <div className="flex justify-end gap-2">
                         <Link
                           href={buildPersonUrl(query, { edit: String(person.id) })}
-                          className="inline-flex h-9 w-9 items-center justify-center border border-[var(--border)] text-[var(--text-muted)] hover:border-[var(--invert)]"
-                          title="Edit"
+                          className="inline-flex h-[34px] w-[34px] items-center justify-center border border-[var(--border)] text-[var(--text-muted)] hover:border-[var(--invert)]"
+                          title="แก้ไข"
                         >
                           <Edit3 size={15} />
                         </Link>
                         <form action={deletePerson}>
                           <input type="hidden" name="id" value={person.id} />
-                          <button
-                            type="submit"
-                            className="inline-flex h-9 w-9 items-center justify-center border border-[#ead8d5] text-[#9a3f35] hover:bg-[#fff5f3]"
-                            title="Delete"
-                          >
-                            <Trash2 size={15} />
-                          </button>
+                          <DeleteConfirmButton text="ต้องการลบข้อมูลบุคคลนี้หรือไม่" />
                         </form>
                       </div>
                     </td>
@@ -315,9 +297,9 @@ export default async function PersonPage({
 
           {people.length === 0 ? (
             <div className="flex min-h-52 flex-col items-center justify-center gap-3 border-t border-[var(--border-subtle)] px-4 text-center">
-              <UserRound className="text-[#9aa395]" size={34} />
-              <p className="text-sm font-medium">No records found</p>
-              <p className="text-sm text-[var(--text-dim)]">Try another search or add a new person.</p>
+              <UserRound className="text-[var(--text-faint)]" size={34} />
+              <p className="text-sm font-medium">ไม่พบข้อมูล</p>
+              <p className="text-sm text-[var(--text-dim)]">ลองค้นหาด้วยคำอื่น หรือเพิ่มข้อมูลบุคคลใหม่</p>
             </div>
           ) : null}
         </section>
@@ -325,22 +307,22 @@ export default async function PersonPage({
 
       {modalMode ? (
         <div className="fixed inset-0 z-40 flex items-center justify-center bg-[var(--invert)]/40 p-4 backdrop-blur-[2px]">
-          <div className="flex max-h-[92vh] w-full max-w-6xl flex-col overflow-hidden border border-[#d8ddd5] bg-[var(--surface)] shadow-[0_24px_80px_rgba(32,34,31,0.18)]">
+          <div className="flex max-h-[92vh] w-full max-w-6xl flex-col overflow-hidden border border-[var(--border)] bg-[var(--surface)] shadow-[0_24px_80px_rgba(15,143,140,0.14)]">
             <div className="flex items-start justify-between gap-4 border-b border-[var(--border-soft)] px-5 py-4 sm:px-6">
               <div>
                 <p className="text-xs font-medium uppercase tracking-[0.18em] text-[var(--text-faint)]">
-                  {isEditing ? "Update person" : "Create person"}
+                  {isEditing ? "แก้ไขข้อมูลบุคคล" : "เพิ่มข้อมูลบุคคล"}
                 </p>
                 <h2 className="mt-1 text-2xl font-semibold text-[var(--text)]">
                   {isEditing
-                    ? `${selectedPerson?.name || "Person"} ${selectedPerson?.lname || ""}`.trim()
-                    : "New person record"}
+                    ? `${selectedPerson?.name || "บุคคล"} ${selectedPerson?.lname || ""}`.trim()
+                    : "ข้อมูลบุคคลใหม่"}
                 </h2>
               </div>
               <Link
                 href={closeHref}
-                className="inline-flex h-10 w-10 items-center justify-center border border-[var(--border)] text-[#5e665c] hover:border-[var(--invert)] hover:text-[var(--text)]"
-                title="Close"
+                className="inline-flex h-[34px] w-[34px] items-center justify-center border border-[var(--border)] text-[var(--text-muted)] hover:border-[var(--invert)] hover:text-[var(--text)]"
+                title="ปิด"
               >
                 <CircleX size={16} />
               </Link>
@@ -357,7 +339,7 @@ export default async function PersonPage({
                     {personFields.map((field) => {
                       const current = textValue(selectedPerson?.[field.name]);
                       const inputClass =
-                        "h-11 w-full border border-[var(--border)] bg-[var(--surface-input)] px-3 text-sm outline-none transition focus:border-[var(--invert)]";
+                        "h-[34px] w-full border border-[var(--border)] bg-[var(--surface-input)] px-3 text-sm outline-none transition placeholder:text-xs focus:border-[var(--invert)]";
                       return (
                         <label
                           key={field.name}
@@ -369,7 +351,7 @@ export default async function PersonPage({
                                 : ""
                           }
                         >
-                          <span className="mb-1.5 block text-xs font-medium uppercase tracking-[0.12em] text-[#6d756a]">
+                          <span className="mb-1.5 block text-xs font-medium uppercase tracking-[0.12em] text-[var(--text-dim)]">
                             {field.label}
                           </span>
                           {field.lookup ? (
@@ -396,19 +378,19 @@ export default async function PersonPage({
                   <div className="space-y-4">
                     <div>
                       <p className="text-xs font-medium uppercase tracking-[0.12em] text-[var(--text-faint)]">
-                        Record details
+                        รายละเอียดระเบียน
                       </p>
-                      <dl className="mt-3 space-y-2 text-sm text-[#4f574d]">
-                        <div className="flex justify-between gap-3 border-b border-[#e1e6de] pb-2">
+                      <dl className="mt-3 space-y-2 text-sm text-[var(--text-muted)]">
+                        <div className="flex justify-between gap-3 border-b border-[var(--border-soft)] pb-2">
                           <dt>ID</dt>
-                          <dd className="font-mono">{selectedPerson?.id ?? "Auto"}</dd>
+                          <dd className="font-mono">{selectedPerson?.id ?? "อัตโนมัติ"}</dd>
                         </div>
-                        <div className="flex justify-between gap-3 border-b border-[#e1e6de] pb-2">
-                          <dt>Mode</dt>
-                          <dd>{isEditing ? "Update" : "Create"}</dd>
+                        <div className="flex justify-between gap-3 border-b border-[var(--border-soft)] pb-2">
+                          <dt>โหมด</dt>
+                          <dd>{isEditing ? "แก้ไข" : "เพิ่มใหม่"}</dd>
                         </div>
-                        <div className="flex justify-between gap-3 border-b border-[#e1e6de] pb-2">
-                          <dt>Rows</dt>
+                        <div className="flex justify-between gap-3 border-b border-[var(--border-soft)] pb-2">
+                          <dt>รายการ</dt>
                           <dd>{total.toLocaleString()}</dd>
                         </div>
                       </dl>
@@ -417,17 +399,17 @@ export default async function PersonPage({
                     <div className="space-y-2">
                       <button
                         type="submit"
-                        className="inline-flex h-11 w-full items-center justify-center gap-2 border border-[var(--invert)] bg-[var(--invert)] px-5 text-sm font-medium text-[var(--invert-fg)] hover:bg-[var(--invert-hover)]"
+                        className="inline-flex h-[34px] w-full items-center justify-center gap-2 border border-[var(--invert)] bg-[var(--invert)] px-5 text-sm font-medium text-[var(--invert-fg)] hover:bg-[var(--invert-hover)]"
                       >
                         <Save size={16} />
-                        Save
+                        บันทึก
                       </button>
                       <Link
                         href={closeHref}
-                        className="inline-flex h-11 w-full items-center justify-center gap-2 border border-[#d6dbd3] bg-[var(--surface)] px-5 text-sm font-medium text-[var(--text-muted)] hover:bg-[#f1f4ef]"
+                        className="inline-flex h-[34px] w-full items-center justify-center gap-2 border border-[var(--border)] bg-[var(--surface)] px-5 text-sm font-medium text-[var(--text-muted)] hover:bg-[var(--surface-2)]"
                       >
                         <RotateCcw size={16} />
-                        Cancel
+                        ยกเลิก
                       </Link>
                     </div>
                   </div>

@@ -25,7 +25,7 @@ export async function createProvider(formData: FormData) {
 
 export async function updateProvider(formData: FormData) {
   const id = Number(formData.get("id"));
-  if (!Number.isInteger(id) || id < 1) throw new Error("Invalid provider id");
+  if (!Number.isInteger(id) || id < 1) throw new Error("รหัสผู้ให้บริการไม่ถูกต้อง");
   await db("provider").where({ id }).update(providerPayload(formData));
   revalidatePath("/provider");
   redirect("/provider");
@@ -33,7 +33,7 @@ export async function updateProvider(formData: FormData) {
 
 export async function deleteProvider(formData: FormData) {
   const id = Number(formData.get("id"));
-  if (!Number.isInteger(id) || id < 1) throw new Error("Invalid provider id");
+  if (!Number.isInteger(id) || id < 1) throw new Error("รหัสผู้ให้บริการไม่ถูกต้อง");
   await db("provider").where({ id }).delete();
   revalidatePath("/provider");
   redirect("/provider");

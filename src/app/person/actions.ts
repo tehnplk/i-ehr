@@ -30,7 +30,7 @@ export async function updatePerson(formData: FormData) {
   const id = Number(formData.get("id"));
 
   if (!Number.isInteger(id) || id < 1) {
-    throw new Error("Invalid person id");
+    throw new Error("รหัสบุคคลไม่ถูกต้อง");
   }
 
   await db("person").where({ id }).update(personPayload(formData));
@@ -42,7 +42,7 @@ export async function deletePerson(formData: FormData) {
   const id = Number(formData.get("id"));
 
   if (!Number.isInteger(id) || id < 1) {
-    throw new Error("Invalid person id");
+    throw new Error("รหัสบุคคลไม่ถูกต้อง");
   }
 
   await db("person").where({ id }).delete();

@@ -27,9 +27,19 @@
 - use `playwright-cli` skill to test ux/ui 
 - Artifacts that produce on test should collect at dir .playwright-cli
 - should call  `playwright-cli show` for user to see your testing
-- if user ask for **annotate** call `playwright-cli anotate`  call  this command
+- if user ask for **annotate** call `playwright-cli anotate`  call  this command  and wait for user done.
     ```
         - playwright-cli open http://localhost/example
         - playwright-cli show --annotate
     ```
 
+- Let edit code follow user's anotation.
+
+## UI control size
+- Textboxes and control-like buttons/links should use 34px height.
+- Textbox text should use `text-sm`; placeholder text should use `placeholder:text-xs`.
+
+## Page header pattern
+- Page headers should be compact: one line only, using `text-xl` (`20px`) with `font-semibold`.
+- Add a `lucide-react` icon before the Thai page title.
+- Do not add breadcrumb/subtitle/description lines unless user asks.

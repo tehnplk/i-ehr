@@ -1,11 +1,12 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Geist_Mono, Noto_Sans_Thai } from "next/font/google";
+import "sweetalert2/dist/sweetalert2.min.css";
 import "./globals.css";
 import { Sidebar } from "@/components/Sidebar";
 
-const geistSans = Geist({
+const notoSansThai = Noto_Sans_Thai({
   variable: "--font-geist-sans",
-  subsets: ["latin"],
+  subsets: ["latin", "thai"],
 });
 
 const geistMono = Geist_Mono({
@@ -15,7 +16,7 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: "i-EHR",
-  description: "Electronic health record workspace",
+  description: "พื้นที่ทำงานเวชระเบียนอิเล็กทรอนิกส์",
 };
 
 const themeInitScript = `(function(){try{var t=localStorage.getItem('theme');var m=window.matchMedia('(prefers-color-scheme: dark)').matches;var d=t?t==='dark':m;if(d)document.documentElement.classList.add('dark');}catch(e){}})();`;
@@ -27,8 +28,8 @@ export default function RootLayout({
 }>) {
   return (
     <html
-      lang="en"
-      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
+      lang="th"
+      className={`${notoSansThai.variable} ${geistMono.variable} h-full antialiased`}
       suppressHydrationWarning
     >
       <head>

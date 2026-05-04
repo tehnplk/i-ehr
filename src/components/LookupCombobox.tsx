@@ -23,7 +23,7 @@ export function LookupCombobox({
 }: Props) {
   const initial = options.find((o) => o.code === defaultCode);
   const [code, setCode] = useState(defaultCode ?? "");
-  const [text, setText] = useState(initial ? `${initial.code} — ${initial.name}` : "");
+  const [text, setText] = useState(initial ? `${initial.code} - ${initial.name}` : "");
   const [open, setOpen] = useState(false);
   const [highlight, setHighlight] = useState(0);
   const wrapRef = useRef<HTMLDivElement>(null);
@@ -50,7 +50,7 @@ export function LookupCombobox({
 
   function commit(opt: Option) {
     setCode(opt.code);
-    setText(`${opt.code} — ${opt.name}`);
+    setText(`${opt.code} - ${opt.name}`);
     setOpen(false);
   }
 
@@ -83,7 +83,7 @@ export function LookupCombobox({
       <input
         type="text"
         value={text}
-        placeholder={placeholder ?? "Search code or name…"}
+        placeholder={placeholder ?? "ค้นหารหัสหรือชื่อ..."}
         onChange={(e) => {
           setText(e.target.value);
           setOpen(true);
@@ -99,10 +99,10 @@ export function LookupCombobox({
         <button
           type="button"
           onClick={clear}
-          aria-label="Clear"
+          aria-label="ล้างค่า"
           className="absolute right-2 top-1/2 -translate-y-1/2 px-1 text-[var(--text-faint)] hover:text-[var(--text)]"
         >
-          ×
+          x
         </button>
       )}
       {open && filtered.length > 0 && (
